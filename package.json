@@ -1,0 +1,20 @@
+{
+  "name": "petcare-connect-workspace",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -k \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:frontend": "npm run dev --workspace petcare-connect/frontend",
+    "dev:backend": "npm run dev --workspace petcare-connect/backend",
+    "build": "npm run build --workspace petcare-connect/frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  },
+  "workspaces": [
+    "petcare-connect/backend",
+    "petcare-connect/frontend"
+  ],
+  "dependencies": {
+    "mongodb": "^7.6.0"
+  }
+}
