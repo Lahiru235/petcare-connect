@@ -34,6 +34,14 @@ app.use("/api/schedules", scheduleRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/admin", adminRoutes);
 
+// --- Root Route (Add this here!) ---
+app.get("/", (req, res) => {
+  res.status(200).json({
+    status: "success",
+    message: "PetCare Connect Backend API is up and running!"
+  });
+});
+
 app.use(notFound);
 app.use(errorHandler);
 
