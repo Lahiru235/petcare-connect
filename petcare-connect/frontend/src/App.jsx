@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuth, homeFor } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardLayout from "./components/DashboardLayout";
+import Home from "./pages/Home";
 
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
@@ -81,7 +82,7 @@ const App = () => {
 
   return (
     <Routes>
-      <Route path="/" element={<Navigate to={user ? homeFor(user.role) : "/login"} replace />} />
+      <Route path="/" element={user ? <Navigate to={homeFor(user.role)} replace /> : <Home />} />
       <Route path="/login" element={user ? <Navigate to={homeFor(user.role)} replace /> : <Login />} />
       <Route path="/register" element={user ? <Navigate to={homeFor(user.role)} replace /> : <Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
