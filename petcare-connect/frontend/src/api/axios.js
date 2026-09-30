@@ -19,14 +19,35 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error.response?.status;
-    const message = error.response?.data?.message || "Cannot reach the server. Try again.";
 
     if (status === 401 && !window.location.pathname.startsWith("/login")) {
       localStorage.removeItem("pcc_token");
       localStorage.removeItem("pcc_user");
       window.location.href = "/login";
     }
-    return Promise.reject(new Error(message));
+
+    // The API answered: always surface what the server actually said.
+    if (error.response) {
+      const data = error.response.data;
+      const message =
+        (typeof data === "string" && data) ||
+        data?.message ||
+        `Request failed with status ${status}.`;
+      return Promise.reject(new Error(message));
+    }
+
+    // No response at all, so the request never reached the API. Say which
+    // URL failed instead of a generic message that hides the real cause.
+    if (error.code === "ECONNABORTED" || error.code === "ETIMEDOUT") {
+      return Promise.reject(
+        new Error(`The server at ${api.defaults.baseURL} took too long to respond.`)
+      );
+    }
+    return Promise.reject(
+      new Error(
+        `Cannot reach the API at ${api.defaults.baseURL}. Make sure the backend is running on port 5000.`
+      )
+    );
   }
 );
 
