@@ -64,6 +64,7 @@ const Home = () => {
             <span className="home-brand-name">PetCare<small>Connect</small></span>
           </Link>
           <nav className="home-nav" aria-label="Main navigation">
+            <a href="#top" onClick={scrollToTop}>Home</a>
             <a href="#services">Services</a>
             <a href="#how-it-works">How it works</a>
             <a href="#testimonials">Reviews</a>
@@ -76,47 +77,39 @@ const Home = () => {
         </div>
       </header>
 
-    {/* ─── Hero ─── */}
-    <section className="home-hero">
-      <div className="home-container home-hero-grid">
-        <div className="home-hero-copy">
-          <span className="home-eyebrow">🐾 Trusted by 2,500+ pet parents</span>
-          <h1>Love, care &amp; comfort for your <em>beloved pets</em></h1>
-          <p>Book trusted veterinary care, follow upcoming visits, and keep your pet's health history close at hand — all in one place.</p>
-          <div className="home-hero-actions">
-            <Link className="home-button home-button-accent home-button-lg" to="/register">
-              Book an appointment <span aria-hidden="true">→</span>
-            </Link>
-            <a className="home-button home-button-outline home-button-lg" href="#services">
-              Explore services
-            </a>
-          </div>
-          <div className="home-hero-trust">
-            <div className="home-trust-avatars" aria-hidden="true">
-              <span>🐕</span><span>🐈</span><span>🐩</span><span>🐱</span>
+      {/* ─── Hero ─── */}
+      <section className="home-hero">
+        <div className="home-container home-hero-grid">
+          <div className="home-hero-copy">
+            <span className="home-eyebrow">🐾 Trusted by 2,500+ pet parents</span>
+            <h1>Love, care &amp; comfort for your <em>beloved pets</em></h1>
+            <p>Book trusted veterinary care, follow upcoming visits, and keep your pet's health history close at hand — all in one place.</p>
+            <div className="home-hero-actions">
+              <Link className="home-button home-button-accent home-button-lg" to="/register">
+                Book an appointment <span aria-hidden="true">→</span>
+              </Link>
+              <a className="home-button home-button-outline home-button-lg" href="#services">
+                Explore services
+              </a>
             </div>
-            <p><strong>4.9★</strong> from 500+ verified pet parents</p>
+            <div className="home-hero-trust">
+              <div className="home-trust-avatars" aria-hidden="true">
+                <span>🐕</span><span>🐈</span><span>🐩</span><span>🐱</span>
+              </div>
+              <p><strong>4.9★</strong> from 500+ verified pet parents</p>
+            </div>
           </div>
-        </div>
 
-        <div className="home-hero-media">
-          <div className="home-hero-img-wrap">
+          <div className="home-hero-media">
             <img
               src="/assets/hero-pets.jpg"
-              alt="Happy Golden Retriever dog and cute fluffy cat relaxing together on a cozy couch"
+              alt="Happy Golden Retriever dog, kitten and fluffy cat relaxing peacefully together"
+              className="home-hero-seamless-img"
               loading="eager"
             />
-            <div className="home-hero-badge">
-              <span className="home-hero-badge-paw" aria-hidden="true">🐾</span>
-              <div className="home-hero-badge-text">
-                <strong>Curated Care</strong>
-                <small>with Love &amp; Trust</small>
-              </div>
-            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
     {/* ─── Stats Bar ─── */}
     <section className="home-stats-bar">
