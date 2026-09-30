@@ -4,12 +4,25 @@ import { useAuth, homeFor } from "../../context/AuthContext";
 import { Alert, Field, useForm } from "../../components/UI";
 import AuthArt from "./AuthArt";
 
+const DEMO_ACCOUNTS = [
+  { role: "Pet Owner", email: "owner@petcare.lk", pass: "owner123", icon: "🐾" },
+  { role: "Doctor / Vet", email: "kasun@petcare.lk", pass: "doctor123", icon: "🩺" },
+  { role: "Reception", email: "reception@petcare.lk", pass: "reception123", icon: "📋" },
+  { role: "Admin", email: "admin@petcare.lk", pass: "admin123", icon: "⚡" },
+];
+
 const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const { values, onChange } = useForm({ email: "", password: "" });
+  const { values, setValues, onChange } = useForm({ email: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+
+  const fillDemo = (acc) => {
+    setValues({ email: acc.email, password: acc.pass });
+    setError("");
+  };
 
   const submit = async (e) => {
     e.preventDefault();
@@ -28,37 +41,110 @@ const Login = () => {
   return (
     <div className="auth">
       <AuthArt
-        eyebrow="Welcome back to your care desk"
+        eyebrow="Welcome Back"
         heading="Everything your pet needs, right when you need it."
-        lead="Book trusted veterinary care, follow upcoming visits, and keep your pet’s health history close at hand."
-        points={["See real-time appointment availability", "Keep every pet record together", "Get reminders before each visit"]}
+        lead="Access seamless appointments, verified pet medical records, and expert veterinary guidance all in one secure place."
+        points={[
+          "Real-time appointment scheduling & visit notes",
+          "One organized health passport for every pet",
+          "Timely vaccination & wellness reminders",
+        ]}
       />
       <section className="auth-panel">
-        <form className="auth-form" onSubmit={submit}>
-          <h2>Log in</h2>
-          <p className="muted small">Use the account the clinic gave you, or the one you signed up with.</p>
+        <div className="auth-card">
+          <div className="auth-card-header">
+            <h2>Welcome back</h2>
+            <p>Sign in to manage appointments and health records for your pets.</p>
+          </div>
+
           <Alert>{error}</Alert>
 
-          <Field label="Email">
-            <input name="email" type="email" value={values.email} onChange={onChange} required placeholder="you@example.com" />
-          </Field>
-          <Field label="Password">
-            <input name="password" type="password" value={values.password} onChange={onChange} required minLength={6} />
-          </Field>
+          <form className="auth-form" onSubmit={submit}>
+            <Field label="Email Address">
+              <input
+                name="email"
+                type="email"
+                value={values.email}
+                onChange={onChange}
+                required
+                placeholder="name@example.com"
+                autoComplete="email"
+              />
+            </Field>
 
-          <button className="btn btn-accent btn-block" disabled={busy}>{busy ? "Logging in…" : "Log in"}</button>
+            <Field label="Password">
+              <div className="input-password-wrap">
+                <input
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  value={values.password}
+                  onChange={onChange}
+                  required
+                  placeholder="Enter your password"
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  title={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? "🙈" : "👁️"}
+                </button>
+              </div>
+            </Field>
 
-          <div className="auth-foot">
-            <Link to="/forgot-password">Forgot your password?</Link>
-            <div>New here? <Link to="/register">Create a pet owner account</Link></div>
-          </div>
+            <div className="auth-options">
+              <Link to="/forgot-password" className="auth-forgot-link">
+                Forgot password?
+              </Link>
+            </div>
 
-          <div className="demo-box">
-            Demo accounts (after <code>npm run seed</code>):<br />
-            owner@petcare.lk / owner123 · kasun@petcare.lk / doctor123<br />
-            reception@petcare.lk / reception123 · admin@petcare.lk / admin123
-          </div>
-        </form>
+            <button
+              type="submit"
+              className="btn btn-accent auth-submit-btn"
+              disabled={busy}
+            >
+              {busy ? (
+                <>
+                  <span className="btn-spinner" aria-hidden="true" />
+                  <span>Logging in…</span>
+                </>
+              ) : (
+                <span>Log In →</span>
+              )}
+            </button>
+
+            <div className="auth-switch">
+              <span>New to PetCare Connect?</span>{" "}
+              <Link to="/register" className="auth-switch-link">
+                Create an account
+              </Link>
+            </div>
+
+            {/* Quick Fill Demo Helper */}
+            <div className="demo-quickfill">
+              <div className="demo-quickfill-head">
+                <span className="demo-quickfill-badge">⚡ Quick Fill Demo</span>
+              </div>
+              <div className="demo-chips">
+                {DEMO_ACCOUNTS.map((acc) => (
+                  <button
+                    key={acc.role}
+                    type="button"
+                    className="demo-chip-btn"
+                    onClick={() => fillDemo(acc)}
+                    title={`Fill as ${acc.role} (${acc.email})`}
+                  >
+                    <span className="demo-chip-icon">{acc.icon}</span>
+                    <span>{acc.role}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </form>
+        </div>
       </section>
     </div>
   );

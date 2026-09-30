@@ -3,7 +3,14 @@ import { useState } from "react";
 export const Loader = ({ label = "Loading…" }) => <div className="loader">{label}</div>;
 
 export const Alert = ({ type = "error", children }) =>
-  children ? <div className={`alert ${type}`}>{children}</div> : null;
+  children ? (
+    <div className={`alert ${type}`} role="alert">
+      <span className="alert-icon" aria-hidden="true">
+        {type === "success" ? "✓" : "⚠️"}
+      </span>
+      <div className="alert-content">{children}</div>
+    </div>
+  ) : null;
 
 export const Empty = ({ title, hint, action }) => (
   <div className="empty">

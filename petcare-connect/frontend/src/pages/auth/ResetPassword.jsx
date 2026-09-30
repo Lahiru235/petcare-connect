@@ -8,6 +8,8 @@ const ResetPassword = () => {
   const { token } = useParams();
   const navigate = useNavigate();
   const { values, onChange } = useForm({ password: "", confirm: "" });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -28,23 +30,94 @@ const ResetPassword = () => {
   return (
     <div className="auth">
       <AuthArt
-        heading="Pick a new password"
-        lead="Choose something at least six characters long. It is hashed before it reaches the database."
-        points={["Stored with bcrypt, never in plain text"]}
+        eyebrow="Security & Access"
+        heading="Create your new password"
+        lead="Choose a secure password of at least 6 characters. Your credentials will be encrypted immediately."
+        points={[
+          "End-to-end bcrypt cryptographic hashing",
+          "Immediately revokes any previous sessions",
+          "Full access restored to all your pet profiles",
+        ]}
       />
       <section className="auth-panel">
-        <form className="auth-form" onSubmit={submit}>
-          <h2>New password</h2>
+        <div className="auth-card">
+          <div className="auth-card-header">
+            <h2>Set new password</h2>
+            <p>Please enter and confirm your new secure password below.</p>
+          </div>
+
           <Alert>{error}</Alert>
-          <Field label="New password">
-            <input name="password" type="password" value={values.password} onChange={onChange} required minLength={6} />
-          </Field>
-          <Field label="Repeat new password">
-            <input name="confirm" type="password" value={values.confirm} onChange={onChange} required minLength={6} />
-          </Field>
-          <button className="btn btn-accent btn-block" disabled={busy}>{busy ? "Saving…" : "Save password"}</button>
-          <div className="auth-foot"><Link to="/login">Back to log in</Link></div>
-        </form>
+
+          <form className="auth-form" onSubmit={submit}>
+            <Field label="New Password">
+              <div className="input-password-wrap">
+                <input
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  value={values.password}
+                  onChange={onChange}
+                  required
+                  minLength={6}
+                  placeholder="Min 6 characters"
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? "🙈" : "👁️"}
+                </button>
+              </div>
+            </Field>
+
+            <Field label="Confirm New Password">
+              <div className="input-password-wrap">
+                <input
+                  name="confirm"
+                  type={showConfirm ? "text" : "password"}
+                  value={values.confirm}
+                  onChange={onChange}
+                  required
+                  minLength={6}
+                  placeholder="Repeat new password"
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  onClick={() => setShowConfirm(!showConfirm)}
+                  aria-label={showConfirm ? "Hide password" : "Show password"}
+                >
+                  {showConfirm ? "🙈" : "👁️"}
+                </button>
+              </div>
+            </Field>
+
+            <button
+              type="submit"
+              className="btn btn-accent auth-submit-btn"
+              disabled={busy}
+            >
+              {busy ? (
+                <>
+                  <span className="btn-spinner" aria-hidden="true" />
+                  <span>Saving Password…</span>
+                </>
+              ) : (
+                <span>Save New Password →</span>
+              )}
+            </button>
+
+            <div className="auth-switch">
+              <span>Know your password?</span>{" "}
+              <Link to="/login" className="auth-switch-link">
+                Back to log in
+              </Link>
+            </div>
+          </form>
+        </div>
       </section>
     </div>
   );
