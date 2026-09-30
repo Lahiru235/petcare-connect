@@ -78,11 +78,7 @@ const Home = () => {
 
     {/* ─── Hero ─── */}
     <section className="home-hero">
-      <div className="home-hero-bg">
-        <img src="/assets/hero-pets.jpg" alt="Happy dogs and cats together in a warm home setting" loading="eager" />
-        <div className="home-hero-overlay" />
-      </div>
-      <div className="home-container home-hero-content">
+      <div className="home-container home-hero-grid">
         <div className="home-hero-copy">
           <span className="home-eyebrow">🐾 Trusted by 2,500+ pet parents</span>
           <h1>Love, care &amp; comfort for your <em>beloved pets</em></h1>
@@ -91,7 +87,7 @@ const Home = () => {
             <Link className="home-button home-button-accent home-button-lg" to="/register">
               Book an appointment <span aria-hidden="true">→</span>
             </Link>
-            <a className="home-button home-button-glass" href="#services">
+            <a className="home-button home-button-outline home-button-lg" href="#services">
               Explore services
             </a>
           </div>
@@ -99,7 +95,24 @@ const Home = () => {
             <div className="home-trust-avatars" aria-hidden="true">
               <span>🐕</span><span>🐈</span><span>🐩</span><span>🐱</span>
             </div>
-            <p><strong>4.9★</strong> from 500+ reviews</p>
+            <p><strong>4.9★</strong> from 500+ verified pet parents</p>
+          </div>
+        </div>
+
+        <div className="home-hero-media">
+          <div className="home-hero-img-wrap">
+            <img
+              src="/assets/hero-pets.jpg"
+              alt="Happy Golden Retriever dog and cute fluffy cat relaxing together on a cozy couch"
+              loading="eager"
+            />
+            <div className="home-hero-badge">
+              <span className="home-hero-badge-paw" aria-hidden="true">🐾</span>
+              <div className="home-hero-badge-text">
+                <strong>Curated Care</strong>
+                <small>with Love &amp; Trust</small>
+              </div>
+            </div>
           </div>
         </div>
       </div>
