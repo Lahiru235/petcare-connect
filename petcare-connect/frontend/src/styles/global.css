@@ -831,22 +831,22 @@ tbody tr:hover { background: #faf8f4; }
 /* --- Eyebrow --- */
 .home-eyebrow { display: inline-block; margin-bottom: .8rem; color: var(--forest); font-family: var(--font-head); font-size: .84rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
 
-/* --- Hero Section (Compact vertical spacing, no excessive white space) --- */
+/* --- Hero Section (Full-page above part with seamless pets) --- */
 .home-hero {
   position: relative;
-  min-height: auto;
+  min-height: calc(100vh - 86px);
   display: flex;
   align-items: center;
-  padding-top: 116px;
-  padding-bottom: 2.5rem;
+  padding-top: 104px;
+  padding-bottom: 3.5rem;
   background: #FAF7F2;
   overflow: hidden;
 }
 .home-hero-grid {
   display: grid;
-  grid-template-columns: 1fr 1.2fr;
+  grid-template-columns: 1fr 1.22fr;
   align-items: center;
-  gap: clamp(2rem, 4vw, 4rem);
+  gap: clamp(2rem, 4vw, 4.5rem);
 }
 .home-hero-copy {
   max-width: 580px;
@@ -921,7 +921,7 @@ tbody tr:hover { background: #faf8f4; }
   font-weight: 700;
 }
 
-/* --- Hero Image on Right (Seamless) --- */
+/* --- Hero Image on Right (Seamless full-height natural pets) --- */
 .home-hero-media {
   position: relative;
   display: flex;
@@ -934,7 +934,7 @@ tbody tr:hover { background: #faf8f4; }
 .home-hero-seamless-img {
   width: 100%;
   height: auto;
-  max-height: 540px;
+  max-height: 600px;
   object-fit: cover;
   object-position: center bottom;
   display: block;
@@ -948,30 +948,7 @@ tbody tr:hover { background: #faf8f4; }
   filter: contrast(1.02) saturate(1.03);
 }
 
-/* --- Large Full-Width Pet Image Section (NO Card / NO Box / Full-width) --- */
-.home-pet-banner-section {
-  width: 100%;
-  position: relative;
-  margin: 0;
-  padding: 0;
-  background: #FAF7F2;
-  overflow: hidden;
-  line-height: 0;
-  display: block;
-}
-.home-pet-banner-img {
-  width: 100%;
-  height: clamp(420px, 48vw, 720px);
-  object-fit: cover;
-  object-position: center 28%;
-  display: block;
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
-  filter: contrast(1.02) saturate(1.03);
-}
-
-/* --- Stats Bar (Directly below Large Pet Image, normal document flow) --- */
+/* --- Stats Bar (Directly below Hero, normal document flow) --- */
 .home-stats-bar {
   width: 100%;
   position: relative;
@@ -1119,10 +1096,6 @@ tbody tr:hover { background: #faf8f4; }
     -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.8) 8%, rgba(0,0,0,1) 16%);
     mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.8) 8%, rgba(0,0,0,1) 16%);
   }
-  .home-pet-banner-img {
-    height: clamp(340px, 45vw, 480px);
-    object-position: center 25%;
-  }
   .home-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 1.6rem; }
   .home-service-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .home-owner-layout { grid-template-columns: 1fr; gap: 2.5rem; }
@@ -1151,10 +1124,6 @@ tbody tr:hover { background: #faf8f4; }
   .home-hero-trust p { font-size: .82rem; }
   .home-trust-avatars span { width: 30px; height: 30px; font-size: .82rem; }
   .home-hero-seamless-img { max-height: 280px; }
-  .home-pet-banner-img {
-    height: 280px;
-    object-position: center 25%;
-  }
   .home-stats-bar { padding-block: 2rem; }
   .home-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 1.2rem; }
   .home-stat-value { font-size: 1.85rem; }

@@ -111,16 +111,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ─── Large Full-Width Pet Image (No Card / No Box) ─── */}
-      <section className="home-pet-banner-section" aria-label="Our clinic pets">
-        <img
-          src="/assets/hero-pets-trio.jpg"
-          alt="Golden retriever dog, black kitten, and tabby cat relaxing together on a cozy couch"
-          className="home-pet-banner-img"
-          loading="eager"
-        />
-      </section>
-
       {/* ─── Stats Bar ─── */}
       <section className="home-stats-bar">
         <div className="home-container home-stats-grid">
