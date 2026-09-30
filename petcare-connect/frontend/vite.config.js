@@ -8,7 +8,7 @@ export default defineConfig({
     // devices on the network cannot load the site at all.
     host: true,
     port: 5173,
-    strictPort: true,
+    strictPort: false,
     proxy: {
       "/api": { target: "http://localhost:5000", changeOrigin: true },
     },
