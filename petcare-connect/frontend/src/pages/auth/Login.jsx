@@ -44,6 +44,8 @@ const Login = () => {
         <AuthArt
           welcomeTitle="Welcome to PetCare"
           welcomeSubtitle="For better experience with your pets!"
+          petImage="/assets/auth-dog.jpg"
+          petAlt="Happy smiling dog"
         />
         <section className="auth-panel">
           <div className="auth-card">

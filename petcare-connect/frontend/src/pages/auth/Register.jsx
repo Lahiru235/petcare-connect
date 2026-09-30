@@ -49,6 +49,8 @@ const Register = () => {
         <AuthArt
           welcomeTitle="Join PetCare"
           welcomeSubtitle="For better experience with your pets!"
+          petImage="/assets/auth-cat.jpg"
+          petAlt="Adorable cute cat"
         />
         <section className="auth-panel">
           <div className="auth-card">
