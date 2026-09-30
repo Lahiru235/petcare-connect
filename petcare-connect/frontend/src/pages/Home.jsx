@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 const services = [
@@ -32,27 +33,48 @@ const stats = [
   { value: "24/7", label: "Emergency support" },
 ];
 
-const Home = () => (
-  <main className="home-page">
-    {/* ─── Navbar ─── */}
-    <header className="home-header">
-      <div className="home-nav-wrap">
-        <Link className="home-brand" to="/" aria-label="PetCare Connect home">
-          <span className="home-brand-icon" aria-hidden="true">🐾</span>
-          <span className="home-brand-name">PetCare<small>Connect</small></span>
-        </Link>
-        <nav className="home-nav" aria-label="Main navigation">
-          <a href="#services">Services</a>
-          <a href="#how-it-works">How it works</a>
-          <a href="#testimonials">Reviews</a>
-          <a href="#contact">Contact</a>
-        </nav>
-        <div className="home-nav-actions">
-          <Link className="home-button home-button-outline" to="/login">Log in</Link>
-          <Link className="home-button home-button-primary" to="/register">Sign up</Link>
+const Home = () => {
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const checkScroll = () => {
+      if (window.scrollY > 280) {
+        setShowScrollTop(true);
+      } else {
+        setShowScrollTop(false);
+      }
+    };
+    window.addEventListener("scroll", checkScroll, { passive: true });
+    checkScroll();
+    return () => window.removeEventListener("scroll", checkScroll);
+  }, []);
+
+  const scrollToTop = (e) => {
+    if (e) e.preventDefault();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  return (
+    <main className="home-page" id="top">
+      {/* ─── Navbar ─── */}
+      <header className="home-header">
+        <div className="home-nav-wrap">
+          <Link className="home-brand" to="/" onClick={scrollToTop} aria-label="PetCare Connect home - scroll to top">
+            <span className="home-brand-icon" aria-hidden="true">🐾</span>
+            <span className="home-brand-name">PetCare<small>Connect</small></span>
+          </Link>
+          <nav className="home-nav" aria-label="Main navigation">
+            <a href="#services">Services</a>
+            <a href="#how-it-works">How it works</a>
+            <a href="#testimonials">Reviews</a>
+            <a href="#contact">Contact</a>
+          </nav>
+          <div className="home-nav-actions">
+            <Link className="home-button home-button-outline" to="/login">Log in</Link>
+            <Link className="home-button home-button-primary" to="/register">Sign up</Link>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
 
     {/* ─── Hero ─── */}
     <section className="home-hero">
@@ -224,7 +246,7 @@ const Home = () => (
     {/* ─── Footer ─── */}
     <footer className="home-footer">
       <div className="home-container home-footer-main">
-        <Link className="home-brand home-brand-footer" to="/" aria-label="PetCare Connect home">
+        <Link className="home-brand home-brand-footer" to="/" onClick={scrollToTop} aria-label="PetCare Connect home - scroll to top">
           <span className="home-brand-icon" aria-hidden="true">🐾</span>
           <span className="home-brand-name">PetCare<small>Connect</small></span>
         </Link>
@@ -242,7 +264,31 @@ const Home = () => (
         <span>Made with ❤️ for pets and their people.</span>
       </div>
     </footer>
+
+    {/* ─── Floating Scroll to Top Button ─── */}
+    <button
+      type="button"
+      className={`scroll-to-top ${showScrollTop ? "visible" : ""}`}
+      onClick={scrollToTop}
+      aria-label="Scroll back to top"
+      title="Scroll to top"
+    >
+      <svg
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M18 15l-6-6-6 6" />
+      </svg>
+    </button>
   </main>
-);
+  );
+};
 
 export default Home;

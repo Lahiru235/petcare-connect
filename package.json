@@ -5,7 +5,8 @@
     "dev": "concurrently -k \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:frontend": "npm run dev --workspace petcare-connect/frontend",
     "dev:backend": "npm run dev --workspace petcare-connect/backend",
-    "build": "npm run build --workspace petcare-connect/frontend"
+    "build": "npm run build --workspace petcare-connect/frontend",
+    "seed": "npm run seed --workspace petcare-connect/backend"
   },
   "devDependencies": {
     "concurrently": "^10.0.5"

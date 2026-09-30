@@ -1,7 +1,12 @@
+import { Link } from "react-router-dom";
+
 // Left-hand panel shared by every auth screen
 const AuthArt = ({ eyebrow, heading, lead, points }) => (
   <aside className="auth-art">
-    <div className="auth-brand"><span className="logo">PetCare<span>Connect</span></span><span className="auth-brand-tag">Veterinary care, made simple</span></div>
+    <div className="auth-brand">
+      <Link to="/" className="logo" title="Back to home page">PetCare<span>Connect</span></Link>
+      <span className="auth-brand-tag">Veterinary care, made simple</span>
+    </div>
     <span className="auth-eyebrow">{eyebrow}</span>
     <h1>{heading}</h1>
     <p className="lead">{lead}</p>

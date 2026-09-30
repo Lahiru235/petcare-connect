@@ -83,7 +83,7 @@ const UserManagement = () => {
                     <td><span className="chip">{u.role}</span></td>
                     <td className="small">{u.phone || "—"}</td>
                     <td className="small">{prettyDate(u.createdAt?.slice(0, 10))}</td>
-                    <td><span className="chip" style={{ background: u.isActive ? "var(--leaf-soft)" : "#f4dede", color: u.isActive ? "var(--forest)" : "var(--danger)" }}>{u.isActive ? "Active" : "Disabled"}</span></td>
+                    <td><span className="chip" style={{ background: u.isActive ? "var(--leaf-soft)" : "var(--danger-soft)", color: u.isActive ? "var(--forest)" : "var(--danger)" }}>{u.isActive ? "Active" : "Disabled"}</span></td>
                     <td>
                       <div className="row-actions">
                         <button className="btn btn-ghost btn-sm" onClick={() => openEdit(u)}>Edit</button>

@@ -35,9 +35,17 @@ const DashboardLayout = ({ menu }) => {
   return (
     <div className="shell">
       <aside className={`sidebar ${open ? "open" : ""}`}>
-        <div>
-          <span className="logo">PetCare<span>Connect</span></span>
-          <span className="role-tag">{roleLabel[user?.role]}</span>
+        <div className="sidebar-brand-box">
+          <NavLink to="/" className="sidebar-brand-link" title="PetCare Connect Home">
+            <span className="sidebar-brand-paw">🐾</span>
+            <div>
+              <span className="sidebar-brand-title">PetCare</span>
+              <small className="sidebar-brand-sub">Connect</small>
+            </div>
+          </NavLink>
+          <div>
+            <span className="role-tag">{roleLabel[user?.role] || user?.role}</span>
+          </div>
         </div>
 
         <nav className="side-nav">
