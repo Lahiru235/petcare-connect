@@ -1,54 +1,40 @@
 import { Link } from "react-router-dom";
 
-// Left-hand panel shared by every auth screen (warm luxury boutique aesthetic)
-const AuthArt = ({ eyebrow = "Compassionate Pet Care", heading, lead, points = [] }) => (
+// Modern minimal left-side visual panel matching the PetShree reference layout
+const AuthArt = ({
+  welcomeTitle = "Welcome to PetCare",
+  welcomeSubtitle = "For better experience with your pets!",
+}) => (
   <aside className="auth-art">
-    <div className="auth-art-top">
-      <Link to="/" className="auth-brand" title="Back to home page" aria-label="PetCare Connect home">
+    {/* Decorative ambient rings and dots matching the reference */}
+    <div className="auth-art-ring auth-art-ring-1" aria-hidden="true" />
+    <div className="auth-art-ring auth-art-ring-2" aria-hidden="true" />
+    <div className="auth-art-dot auth-art-dot-1" aria-hidden="true" />
+    <div className="auth-art-dot auth-art-dot-2" aria-hidden="true" />
+
+    {/* Brand Logo Header */}
+    <div className="auth-art-header">
+      <Link to="/" className="auth-brand" title="Back to PetCare Connect Home" aria-label="PetCare Connect home">
         <span className="auth-brand-icon" aria-hidden="true">🐾</span>
-        <span className="auth-brand-name">PetCare<small>Connect</small></span>
+        <span className="auth-brand-name">
+          petcare<small>.connect</small>
+        </span>
       </Link>
-      <span className="auth-brand-tag">Boutique Veterinary Care</span>
     </div>
 
-    <div className="auth-art-body">
-      <div className="auth-art-hero">
-        <div className="auth-art-img-wrap">
-          <img
-            src="/assets/hero-pets.jpg"
-            alt="Happy pets relaxing peacefully"
-            className="auth-art-img"
-          />
-          <div className="auth-art-badge">
-            <span className="auth-art-badge-dot" />
-            <span>Loving Care Daily</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="auth-art-content">
-        <span className="auth-eyebrow">{eyebrow}</span>
-        <h1>{heading}</h1>
-        {lead && <p className="auth-lead">{lead}</p>}
-
-        {points && points.length > 0 && (
-          <ul className="auth-points">
-            {points.map((p) => (
-              <li key={p}>
-                <span className="auth-point-icon" aria-hidden="true">✓</span>
-                <span>{p}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+    {/* Simple Eye-Catching Greeting (No paragraph, No letters, No bullet points) */}
+    <div className="auth-art-headline">
+      <h2>{welcomeTitle}</h2>
+      <p>{welcomeSubtitle}</p>
     </div>
 
-    <div className="auth-art-foot">
-      <div className="auth-trust-pill">
-        <span className="auth-trust-stars" aria-hidden="true">★★★★★</span>
-        <p><strong>4.9/5 Rating</strong> from 2,500+ happy pet parents</p>
-      </div>
+    {/* Modern Pet Visual */}
+    <div className="auth-art-pet-stage">
+      <img
+        src="/assets/auth-pet.jpg"
+        alt="Happy smiling dog"
+        className="auth-art-pet-img"
+      />
     </div>
   </aside>
 );

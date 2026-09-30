@@ -39,113 +39,109 @@ const Login = () => {
   };
 
   return (
-    <div className="auth">
-      <AuthArt
-        eyebrow="Welcome Back"
-        heading="Everything your pet needs, right when you need it."
-        lead="Access seamless appointments, verified pet medical records, and expert veterinary guidance all in one secure place."
-        points={[
-          "Real-time appointment scheduling & visit notes",
-          "One organized health passport for every pet",
-          "Timely vaccination & wellness reminders",
-        ]}
-      />
-      <section className="auth-panel">
-        <div className="auth-card">
-          <div className="auth-card-header">
-            <h2>Welcome back</h2>
-            <p>Sign in to manage appointments and health records for your pets.</p>
-          </div>
+    <div className="auth-page-wrapper">
+      <div className="auth-card-container">
+        <AuthArt
+          welcomeTitle="Welcome to PetCare"
+          welcomeSubtitle="For better experience with your pets!"
+        />
+        <section className="auth-panel">
+          <div className="auth-card">
+            <div className="auth-card-header">
+              <h2>Sign In</h2>
+              <p>Enter your details to access your pet care dashboard</p>
+            </div>
 
-          <Alert>{error}</Alert>
+            <Alert>{error}</Alert>
 
-          <form className="auth-form" onSubmit={submit}>
-            <Field label="Email Address">
-              <input
-                name="email"
-                type="email"
-                value={values.email}
-                onChange={onChange}
-                required
-                placeholder="name@example.com"
-                autoComplete="email"
-              />
-            </Field>
-
-            <Field label="Password">
-              <div className="input-password-wrap">
+            <form className="auth-form" onSubmit={submit}>
+              <Field label="Email Address">
                 <input
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  value={values.password}
+                  name="email"
+                  type="email"
+                  value={values.email}
                   onChange={onChange}
                   required
-                  placeholder="Enter your password"
-                  autoComplete="current-password"
+                  placeholder="name@example.com"
+                  autoComplete="email"
                 />
-                <button
-                  type="button"
-                  className="password-toggle-btn"
-                  onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                  title={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? "🙈" : "👁️"}
-                </button>
-              </div>
-            </Field>
+              </Field>
 
-            <div className="auth-options">
-              <Link to="/forgot-password" className="auth-forgot-link">
-                Forgot password?
-              </Link>
-            </div>
-
-            <button
-              type="submit"
-              className="btn btn-accent auth-submit-btn"
-              disabled={busy}
-            >
-              {busy ? (
-                <>
-                  <span className="btn-spinner" aria-hidden="true" />
-                  <span>Logging in…</span>
-                </>
-              ) : (
-                <span>Log In →</span>
-              )}
-            </button>
-
-            <div className="auth-switch">
-              <span>New to PetCare Connect?</span>{" "}
-              <Link to="/register" className="auth-switch-link">
-                Create an account
-              </Link>
-            </div>
-
-            {/* Quick Fill Demo Helper */}
-            <div className="demo-quickfill">
-              <div className="demo-quickfill-head">
-                <span className="demo-quickfill-badge">⚡ Quick Fill Demo</span>
-              </div>
-              <div className="demo-chips">
-                {DEMO_ACCOUNTS.map((acc) => (
+              <Field label="Password">
+                <div className="input-password-wrap">
+                  <input
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    value={values.password}
+                    onChange={onChange}
+                    required
+                    placeholder="Enter your password"
+                    autoComplete="current-password"
+                  />
                   <button
-                    key={acc.role}
                     type="button"
-                    className="demo-chip-btn"
-                    onClick={() => fillDemo(acc)}
-                    title={`Fill as ${acc.role} (${acc.email})`}
+                    className="password-toggle-btn"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    title={showPassword ? "Hide password" : "Show password"}
                   >
-                    <span className="demo-chip-icon">{acc.icon}</span>
-                    <span>{acc.role}</span>
+                    {showPassword ? "🙈" : "👁️"}
                   </button>
-                ))}
+                </div>
+              </Field>
+
+              <div className="auth-options">
+                <Link to="/forgot-password" className="auth-forgot-link">
+                  Forgot password?
+                </Link>
               </div>
-            </div>
-          </form>
-        </div>
-      </section>
+
+              <button
+                type="submit"
+                className="btn btn-accent auth-submit-btn"
+                disabled={busy}
+              >
+                {busy ? (
+                  <>
+                    <span className="btn-spinner" aria-hidden="true" />
+                    <span>Signing in…</span>
+                  </>
+                ) : (
+                  <span>Let's Get Started! →</span>
+                )}
+              </button>
+
+              <div className="auth-switch">
+                <span>New to PetCare?</span>{" "}
+                <Link to="/register" className="auth-switch-link">
+                  Create an account
+                </Link>
+              </div>
+
+              {/* Quick Fill Demo Helper */}
+              <div className="demo-quickfill">
+                <div className="demo-quickfill-head">
+                  <span className="demo-quickfill-badge">⚡ Quick Fill Demo</span>
+                </div>
+                <div className="demo-chips">
+                  {DEMO_ACCOUNTS.map((acc) => (
+                    <button
+                      key={acc.role}
+                      type="button"
+                      className="demo-chip-btn"
+                      onClick={() => fillDemo(acc)}
+                      title={`Fill as ${acc.role} (${acc.email})`}
+                    >
+                      <span className="demo-chip-icon">{acc.icon}</span>
+                      <span>{acc.role}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </form>
+          </div>
+        </section>
+      </div>
     </div>
   );
 };
