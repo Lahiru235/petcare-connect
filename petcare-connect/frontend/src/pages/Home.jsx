@@ -111,17 +111,27 @@ const Home = () => {
         </div>
       </section>
 
-    {/* ─── Stats Bar ─── */}
-    <section className="home-stats-bar">
-      <div className="home-container home-stats-grid">
-        {stats.map((s) => (
-          <div className="home-stat-item" key={s.label}>
-            <span className="home-stat-value">{s.value}</span>
-            <span className="home-stat-label">{s.label}</span>
-          </div>
-        ))}
-      </div>
-    </section>
+      {/* ─── Large Full-Width Pet Image (No Card / No Box) ─── */}
+      <section className="home-pet-banner-section" aria-label="Our clinic pets">
+        <img
+          src="/assets/hero-pets-trio.jpg"
+          alt="Golden retriever dog, black kitten, and tabby cat relaxing together on a cozy couch"
+          className="home-pet-banner-img"
+          loading="eager"
+        />
+      </section>
+
+      {/* ─── Stats Bar ─── */}
+      <section className="home-stats-bar">
+        <div className="home-container home-stats-grid">
+          {stats.map((s) => (
+            <div className="home-stat-item" key={s.label}>
+              <span className="home-stat-value">{s.value}</span>
+              <span className="home-stat-label">{s.label}</span>
+            </div>
+          ))}
+        </div>
+      </section>
 
     {/* ─── Services ─── */}
     <section className="home-section home-services" id="services">
