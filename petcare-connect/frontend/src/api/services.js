@@ -56,3 +56,8 @@ export const adminApi = {
   stats: () => api.get("/admin/stats"),
   reports: (params) => api.get("/admin/reports", { params }),
 };
+
+export const chatApi = {
+  send: (message, sessionId) => api.post("/chat", { message, sessionId }),
+  clear: (sessionId) => api.delete("/chat/clear", { data: { sessionId } }),
+};

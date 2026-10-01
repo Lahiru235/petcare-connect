@@ -14,6 +14,7 @@ const recordRoutes = require("./routes/recordRoutes");
 const scheduleRoutes = require("./routes/scheduleRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const adminRoutes = require("./routes/adminRoutes");
+const chatRoutes = require("./routes/chatRoutes");
 
 connectDB();
 
@@ -68,6 +69,7 @@ app.use("/api/records", recordRoutes);
 app.use("/api/schedules", scheduleRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/chat", chatRoutes);
 
 // --- Root Route (Add this here!) ---
 app.get("/", (req, res) => {
