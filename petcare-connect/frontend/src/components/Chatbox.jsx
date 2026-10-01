@@ -46,9 +46,22 @@ const Chatbox = () => {
     if (open && inputRef.current) inputRef.current.focus();
   }, [open]);
 
-  const sendToApi = useCallback(async (text) => {
+  // Auto-retry with exponential backoff for 503 errors
+  const sendToApi = useCallback(async (text, retries = 3) => {
     const sessionId = user ? undefined : getSessionId();
-    return chatApi.send(text, sessionId);
+    for (let i = 0; i < retries; i++) {
+      try {
+        return await chatApi.send(text, sessionId);
+      } catch (err) {
+        const status = err?.response?.status;
+        if ((status === 503 || status === 429) && i < retries - 1) {
+          // Wait 3s, 6s, 12s before retrying
+          await new Promise((r) => setTimeout(r, 3000 * Math.pow(2, i)));
+          continue;
+        }
+        throw err;
+      }
+    }
   }, [user]);
 
   const send = useCallback(async () => {
@@ -72,7 +85,7 @@ const Chatbox = () => {
         ...m,
         {
           role: "bot",
-          text: "Oops! Something went wrong. Please try again in a moment. 🐾",
+          text: "PawBuddy is experiencing high demand right now. Please wait a moment and try again! 🐾",
           ts: Date.now(),
           error: true,
         },
@@ -118,7 +131,7 @@ const Chatbox = () => {
         ...m,
         {
           role: "bot",
-          text: "Oops! Something went wrong. 🐾",
+          text: "PawBuddy is experiencing high demand right now. Please wait a moment and try again! 🐾",
           ts: Date.now(),
           error: true,
         },
