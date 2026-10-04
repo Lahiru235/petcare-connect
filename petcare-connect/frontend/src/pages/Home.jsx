@@ -38,7 +38,12 @@ const Home = () => {
 
   useEffect(() => {
     const checkScroll = () => {
-      if (window.scrollY > 280) {
+      const scrollPos =
+        window.scrollY ||
+        document.documentElement.scrollTop ||
+        document.body.scrollTop ||
+        0;
+      if (scrollPos > 200) {
         setShowScrollTop(true);
       } else {
         setShowScrollTop(false);
@@ -51,7 +56,10 @@ const Home = () => {
 
   const scrollToTop = (e) => {
     if (e) e.preventDefault();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    if (document.scrollingElement) {
+      document.scrollingElement.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    }
   };
 
   return (

@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { appointmentApi, petApi, scheduleApi } from "../../api/services";
-import { Alert, Empty, Field, Loader, todayStr } from "../../components/UI";
+import { appointmentApi, paymentApi, petApi, scheduleApi } from "../../api/services";
+import { useAuth } from "../../context/AuthContext";
+import { Alert, Empty, Field, Loader, Modal, todayStr } from "../../components/UI";
+
+const CONSULTATION_FEE = 1500; // default LKR, can be dynamic from doctor.consultationFee
 
 const BookAppointment = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [pets, setPets] = useState([]);
   const [vets, setVets] = useState([]);
   const [slots, setSlots] = useState([]);
@@ -12,6 +16,12 @@ const BookAppointment = () => {
   const [searching, setSearching] = useState(false);
   const [msg, setMsg] = useState({ error: "", ok: "" });
   const [form, setForm] = useState({ pet: "", specialisation: "", doctor: "", date: todayStr(), startTime: "", reason: "" });
+
+  // Payment modal state
+  const [showPayment, setShowPayment] = useState(false);
+  const [bookedAppointment, setBookedAppointment] = useState(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentError, setPaymentError] = useState("");
 
   const set = (patch) => setForm((f) => ({ ...f, ...patch }));
 
@@ -48,18 +58,59 @@ const BookAppointment = () => {
     }
   };
 
+  // Get selected vet's consultation fee
+  const getConsultationFee = () => {
+    const selectedVet = vets.find((v) => v._id === form.doctor);
+    return selectedVet?.consultationFee || CONSULTATION_FEE;
+  };
+
   const book = async (e) => {
     e.preventDefault();
     try {
-      await appointmentApi.create({
+      const { data } = await appointmentApi.create({
         pet: form.pet, doctor: form.doctor, date: form.date,
         startTime: form.startTime, reason: form.reason,
       });
-      navigate("/owner/appointments");
+      // After booking, show payment modal
+      setBookedAppointment(data.appointment);
+      setShowPayment(true);
+      setPaymentError("");
     } catch (err) {
       setMsg({ error: err.message, ok: "" });
       setSlots([]);
     }
+  };
+
+  // Stripe checkout handler
+  const handleStripeCheckout = async () => {
+    if (!bookedAppointment) return;
+    setPaymentLoading(true);
+    setPaymentError("");
+
+    try {
+      const fee = getConsultationFee();
+      const selectedPet = pets.find((p) => p._id === (bookedAppointment.pet?._id || form.pet));
+
+      const { data } = await paymentApi.create({
+        appointmentId: bookedAppointment._id,
+        serviceName: `Vet Consultation – ${selectedPet?.name || "Pet"}`,
+        amount: fee,
+      });
+
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error("Stripe checkout session URL was not returned");
+      }
+    } catch (err) {
+      setPaymentError(err.response?.data?.message || err.message || "Failed to start payment");
+      setPaymentLoading(false);
+    }
+  };
+
+  const skipPayment = () => {
+    setShowPayment(false);
+    navigate("/owner/appointments");
   };
 
   if (loading) return <Loader />;
@@ -128,7 +179,7 @@ const BookAppointment = () => {
 
         {!searching && form.doctor && form.date && !slots.length && msg.error && (
           <p className="small muted" style={{ marginTop: ".7rem" }}>
-            Choose a date with veterinarian working hours, then click “Show free slots” again.
+            Choose a date with veterinarian working hours, then click "Show free slots" again.
           </p>
         )}
 
@@ -136,9 +187,73 @@ const BookAppointment = () => {
           <Field label="Reason for the visit">
             <textarea value={form.reason} onChange={(e) => set({ reason: e.target.value })} placeholder="Limping, vaccination due, skin irritation…" />
           </Field>
-          <button className="btn btn-accent" disabled={!form.startTime}>Confirm booking</button>
+
+          {form.doctor && (
+            <div className="payment-fee-preview">
+              <span className="small muted">Consultation fee</span>
+              <span className="fee-amount">LKR {getConsultationFee().toLocaleString()}.00</span>
+            </div>
+          )}
+
+          <button className="btn btn-accent" disabled={!form.startTime}>Confirm & Pay</button>
         </div>
       </form>
+
+      {/* ── Payment Modal ── */}
+      {showPayment && bookedAppointment && (
+        <Modal title="Complete Payment" onClose={skipPayment}>
+          <div className="payment-checkout-modal">
+            <Alert>{paymentError}</Alert>
+
+            <div className="payment-summary">
+              <div className="payment-summary-icon">💳</div>
+              <h3>Appointment Confirmed!</h3>
+              <p className="muted">Complete your payment to secure your booking.</p>
+
+              <div className="payment-details-grid">
+                <div className="payment-detail-row">
+                  <span className="muted">Pet</span>
+                  <strong>{bookedAppointment.pet?.name}</strong>
+                </div>
+                <div className="payment-detail-row">
+                  <span className="muted">Veterinarian</span>
+                  <strong>Dr. {bookedAppointment.doctor?.name}</strong>
+                </div>
+                <div className="payment-detail-row">
+                  <span className="muted">Date & Time</span>
+                  <strong>{bookedAppointment.date} at {bookedAppointment.startTime}</strong>
+                </div>
+                <div className="payment-detail-row total">
+                  <span>Total Amount</span>
+                  <strong className="fee-amount-lg">LKR {getConsultationFee().toLocaleString()}.00</strong>
+                </div>
+              </div>
+            </div>
+
+            <div className="payment-gateway-brand">
+              <p className="small muted">💳 Secure online payment powered by Stripe Checkout</p>
+            </div>
+
+            <button
+              className="btn btn-accent btn-block btn-pay"
+              onClick={handleStripeCheckout}
+              disabled={paymentLoading}
+            >
+              {paymentLoading ? (
+                <>
+                  <span className="spinner" /> Processing…
+                </>
+              ) : (
+                <>💳 Pay Now – LKR {getConsultationFee().toLocaleString()}.00</>
+              )}
+            </button>
+
+            <button className="btn btn-ghost btn-block" onClick={skipPayment} style={{ marginTop: ".5rem" }}>
+              Pay later
+            </button>
+          </div>
+        </Modal>
+      )}
     </>
   );
 };

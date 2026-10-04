@@ -1241,9 +1241,9 @@ tbody tr:hover { background: #faf8f4; }
 /* --- Floating Scroll to Top Button --- */
 .scroll-to-top {
   position: fixed;
-  bottom: 28px;
-  right: 28px;
-  z-index: 90;
+  bottom: 102px;
+  right: 34px;
+  z-index: 999;
   width: 50px;
   height: 50px;
   border-radius: 50%;
@@ -1257,7 +1257,8 @@ tbody tr:hover { background: #faf8f4; }
   box-shadow: 0 8px 24px rgba(255, 107, 61, 0.38), 0 2px 6px rgba(0, 0, 0, 0.08);
   opacity: 0;
   visibility: hidden;
-  transform: translateY(20px) scale(0.85);
+  pointer-events: none;
+  transform: translateY(16px) scale(0.85);
   transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
               transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
               visibility 0.3s ease,
@@ -1268,6 +1269,7 @@ tbody tr:hover { background: #faf8f4; }
 .scroll-to-top.visible {
   opacity: 1;
   visibility: visible;
+  pointer-events: auto;
   transform: translateY(0) scale(1);
 }
 
@@ -1291,8 +1293,17 @@ tbody tr:hover { background: #faf8f4; }
 
 @media (max-width: 640px) {
   .scroll-to-top {
-    bottom: 20px;
-    right: 20px;
+    bottom: 96px;
+    right: 28px;
+    width: 46px;
+    height: 46px;
+  }
+}
+
+@media (max-width: 480px) {
+  .scroll-to-top {
+    bottom: 86px;
+    right: 24px;
     width: 44px;
     height: 44px;
   }
@@ -1703,5 +1714,273 @@ tbody tr:hover { background: #faf8f4; }
     height: 520px;
     right: 16px;
     bottom: 90px;
+  }
+}
+
+/* ─── Payment Gateway Styles ────────────────────────────────────────── */
+
+/* Payment Result Pages (Success / Cancel) */
+.payment-result-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--cream) 0%, var(--leaf-soft) 50%, var(--carrot-soft) 100%);
+  padding: 2rem;
+}
+
+.payment-result-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  padding: 3rem 2.5rem;
+  text-align: center;
+  max-width: 480px;
+  width: 100%;
+  animation: payResultFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes payResultFadeIn {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.payment-result-icon {
+  margin-bottom: 1.5rem;
+}
+
+.payment-result-icon svg {
+  animation: payIconDraw 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+}
+
+@keyframes payIconDraw {
+  from { stroke-dasharray: 200; stroke-dashoffset: 200; opacity: 0; }
+  to   { stroke-dasharray: 200; stroke-dashoffset: 0; opacity: 1; }
+}
+
+.payment-result-card.success {
+  border-top: 4px solid var(--leaf);
+}
+
+.payment-result-card.cancel {
+  border-top: 4px solid var(--danger);
+}
+
+.payment-result-card h1 {
+  font-size: 1.8rem;
+  margin-bottom: 0.6rem;
+}
+
+.payment-result-card .muted {
+  margin-bottom: 1.2rem;
+}
+
+.payment-result-card .btn {
+  margin-top: 1rem;
+}
+
+.payment-result-actions {
+  display: flex;
+  gap: 0.8rem;
+  justify-content: center;
+  margin-top: 1.2rem;
+  flex-wrap: wrap;
+}
+
+/* Payment Checkout Modal */
+.payment-checkout-modal {
+  padding: 0.5rem 0;
+}
+
+.payment-summary {
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.payment-summary-icon {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+  animation: payBounce 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes payBounce {
+  0%   { transform: scale(0); }
+  60%  { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+.payment-summary h3 {
+  font-size: 1.3rem;
+  color: var(--leaf);
+}
+
+.payment-summary .muted {
+  margin-bottom: 1.2rem;
+}
+
+.payment-details-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 0.8rem;
+}
+
+.payment-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--line-subtle);
+  font-size: 0.92rem;
+}
+
+.payment-detail-row:last-child {
+  border-bottom: none;
+}
+
+.payment-detail-row.total {
+  border-top: 2px solid var(--line);
+  border-bottom: none;
+  padding-top: 0.9rem;
+  margin-top: 0.3rem;
+  font-size: 1rem;
+}
+
+.fee-amount {
+  font-family: var(--font-head);
+  font-weight: 600;
+  color: var(--leaf);
+  font-size: 1.05rem;
+}
+
+.fee-amount-lg {
+  font-family: var(--font-head);
+  font-weight: 600;
+  color: var(--leaf);
+  font-size: 1.35rem;
+}
+
+.payment-gateway-brand {
+  text-align: center;
+  padding: 1rem 0;
+  margin: 0.8rem 0;
+  border-top: 1px solid var(--line-subtle);
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.payhere-logo {
+  max-width: 180px;
+  height: auto;
+  margin-bottom: 0.4rem;
+  opacity: 0.9;
+}
+
+.btn-pay {
+  font-size: 1.05rem;
+  padding: 0.85rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+  background: linear-gradient(135deg, var(--leaf), var(--forest));
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-pay::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+  transition: left 0.5s;
+}
+
+.btn-pay:hover::before {
+  left: 100%;
+}
+
+.spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Fee Preview in Booking Form */
+.payment-fee-preview {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--leaf-soft);
+  border: 1px solid rgba(45, 122, 71, 0.15);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Payment Detail Modal */
+.payment-detail-modal {
+  max-height: 65vh;
+  overflow-y: auto;
+  padding-right: 0.3rem;
+}
+
+.payment-detail-section {
+  margin-bottom: 1.2rem;
+  padding-bottom: 0.5rem;
+}
+
+.payment-detail-section:not(:last-child) {
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.payment-detail-section h3 {
+  font-size: 1rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.3rem;
+}
+
+.payment-detail-row code {
+  font-size: 0.82rem;
+  background: var(--cream);
+  padding: 0.15rem 0.45rem;
+  border-radius: 6px;
+  color: var(--ink);
+  font-family: "SF Mono", "Fira Code", monospace;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .payment-result-card {
+    padding: 2rem 1.5rem;
+  }
+  .payment-result-card h1 {
+    font-size: 1.4rem;
+  }
+  .payment-result-actions {
+    flex-direction: column;
+  }
+  .payment-result-actions .btn {
+    width: 100%;
+  }
+  .payment-detail-row {
+    font-size: 0.85rem;
+    gap: 0.4rem;
+  }
+  .fee-amount-lg {
+    font-size: 1.1rem;
   }
 }

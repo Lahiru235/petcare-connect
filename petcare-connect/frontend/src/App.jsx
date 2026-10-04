@@ -30,12 +30,17 @@ import ManageAppointments from "./pages/reception/ManageAppointments";
 import RegisterWalkIn from "./pages/reception/RegisterWalkIn";
 import VetAvailability from "./pages/reception/VetAvailability";
 import SearchPatients from "./pages/reception/SearchPatients";
+import PaymentDetails from "./pages/reception/PaymentDetails";
 
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import UserManagement from "./pages/admin/UserManagement";
 import VetManagement from "./pages/admin/VetManagement";
 import Reports from "./pages/admin/Reports";
 import SystemSettings from "./pages/admin/SystemSettings";
+import PaymentManagement from "./pages/admin/PaymentManagement";
+
+import PaymentSuccess from "./pages/payment/PaymentSuccess";
+import PaymentCancel from "./pages/payment/PaymentCancel";
 
 const ownerMenu = [
   { to: "/owner", label: "Dashboard", icon: "🏠", end: true },
@@ -64,6 +69,7 @@ const receptionMenu = [
   { to: "/reception/walk-in", label: "Register walk-in", icon: "🚶" },
   { to: "/reception/availability", label: "Vet availability", icon: "⏰" },
   { to: "/reception/patients", label: "Search patients", icon: "🔍" },
+  { to: "/reception/payments", label: "Payments", icon: "💳" },
   { to: "/reception/notifications", label: "Notifications", icon: "🔔" },
   { to: "/reception/profile", label: "Profile", icon: "👤" },
 ];
@@ -72,6 +78,7 @@ const adminMenu = [
   { to: "/admin", label: "Dashboard", icon: "🏠", end: true },
   { to: "/admin/users", label: "User management", icon: "👥" },
   { to: "/admin/vets", label: "Veterinarians", icon: "🩺" },
+  { to: "/admin/payments", label: "Payments", icon: "💳" },
   { to: "/admin/reports", label: "Reports", icon: "📈" },
   { to: "/admin/settings", label: "System settings", icon: "⚙️" },
   { to: "/admin/profile", label: "Profile", icon: "👤" },
@@ -87,6 +94,10 @@ const App = () => {
       <Route path="/register" element={user ? <Navigate to={homeFor(user.role)} replace /> : <Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />
+
+      {/* Payment result pages (accessible by anyone with session) */}
+      <Route path="/payment-success" element={<PaymentSuccess />} />
+      <Route path="/payment-cancel" element={<PaymentCancel />} />
 
       {/* Pet owner */}
       <Route path="/owner" element={<ProtectedRoute allow={["owner"]}><DashboardLayout menu={ownerMenu} /></ProtectedRoute>}>
@@ -118,6 +129,7 @@ const App = () => {
         <Route path="walk-in" element={<RegisterWalkIn />} />
         <Route path="availability" element={<VetAvailability />} />
         <Route path="patients" element={<SearchPatients />} />
+        <Route path="payments" element={<PaymentDetails />} />
         <Route path="notifications" element={<Notifications />} />
         <Route path="profile" element={<Profile />} />
       </Route>
@@ -127,6 +139,7 @@ const App = () => {
         <Route index element={<AdminDashboard />} />
         <Route path="users" element={<UserManagement />} />
         <Route path="vets" element={<VetManagement />} />
+        <Route path="payments" element={<PaymentManagement />} />
         <Route path="reports" element={<Reports />} />
         <Route path="settings" element={<SystemSettings />} />
         <Route path="profile" element={<Profile />} />

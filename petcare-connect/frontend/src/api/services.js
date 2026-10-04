@@ -61,3 +61,12 @@ export const chatApi = {
   send: (message, sessionId) => api.post("/chat", { message, sessionId }),
   clear: (sessionId) => api.delete("/chat/clear", { data: { sessionId } }),
 };
+
+export const paymentApi = {
+  create: (data) => api.post("/payments/create", data),
+  verifySession: (sessionId) => api.get(`/payments/verify-session/${sessionId}`),
+  list: (params) => api.get("/payments", { params }),
+  get: (id) => api.get(`/payments/${id}`),
+  byAppointment: (appointmentId) => api.get(`/payments/by-appointment/${appointmentId}`),
+  stats: () => api.get("/payments/stats"),
+};

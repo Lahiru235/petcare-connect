@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="petcare-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff6b3d"/>
+      <stop offset="100%" stop-color="#ff8f5e"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded squircle matching the header PetCare brand icon -->
+  <rect width="64" height="64" rx="18" fill="url(#petcare-grad)"/>
+
+  <!-- PetCare Paw Prints Logo -->
+  <g fill="#ffffff">
+    <!-- Big paw (top right) -->
+    <g transform="translate(38, 25) rotate(18) scale(0.68)">
+      <!-- Main Pad -->
+      <path d="M0,7 C-7.5,7 -12,2.5 -11.5,-4.5 C-11,-10 -5,-12.5 0,-12.5 C5,-12.5 11,-10 11.5,-4.5 C12,2.5 7.5,7 0,7 Z"/>
+      <!-- Toe Pads -->
+      <ellipse cx="-11" cy="-14" rx="3.4" ry="5.6" transform="rotate(-26 -11 -14)"/>
+      <ellipse cx="-4" cy="-21" rx="3.4" ry="6.2" transform="rotate(-8 -4 -21)"/>
+      <ellipse cx="4" cy="-21" rx="3.4" ry="6.2" transform="rotate(8 4 -21)"/>
+      <ellipse cx="11" cy="-14" rx="3.4" ry="5.6" transform="rotate(26 11 -14)"/>
+    </g>
+    <!-- Small paw (bottom left) -->
+    <g transform="translate(22, 42) rotate(-15) scale(0.50)">
+      <!-- Main Pad -->
+      <path d="M0,7 C-7.5,7 -12,2.5 -11.5,-4.5 C-11,-10 -5,-12.5 0,-12.5 C5,-12.5 11,-10 11.5,-4.5 C12,2.5 7.5,7 0,7 Z"/>
+      <!-- Toe Pads -->
+      <ellipse cx="-11" cy="-14" rx="3.4" ry="5.6" transform="rotate(-26 -11 -14)"/>
+      <ellipse cx="-4" cy="-21" rx="3.4" ry="6.2" transform="rotate(-8 -4 -21)"/>
+      <ellipse cx="4" cy="-21" rx="3.4" ry="6.2" transform="rotate(8 4 -21)"/>
+      <ellipse cx="11" cy="-14" rx="3.4" ry="5.6" transform="rotate(26 11 -14)"/>
+    </g>
+  </g>
+</svg>
