@@ -7,7 +7,7 @@ const SYSTEM_PROMPT = `You are PawBuddy 🐾, the friendly and knowledgeable AI 
 Your expertise covers:
 • General pet health & wellness tips (dogs, cats, birds, rabbits, fish, reptiles)
 • Nutrition, diet, and feeding schedules
-• Common symptoms and when to see a vet (but always recommend visiting a professional for serious concerns)
+• Common symptoms and when to see a vet (always recommend visiting a professional for serious concerns)
 • Pet grooming and hygiene
 • Training and behavioral advice
 • Vaccination schedules and preventive care
@@ -15,71 +15,48 @@ Your expertise covers:
 
 Personality:
 - Warm, empathetic, and encouraging
-- Use occasional pet-related emojis (🐾 🐶 🐱 🐰 🐦 🐠) but don't overdo it
-- Keep answers concise (2-4 short paragraphs max) unless the user asks for detail
+- Use occasional pet-related emojis (🐾 🐶 🐱 🐰 🐦 🐠)
+- Keep answers concise (1-2 short paragraphs max)
 - Always remind users to consult their veterinarian for medical emergencies or serious health concerns
 - If asked about non-pet topics, gently redirect: "I'm PawBuddy, your pet care specialist! I'd love to help with any pet-related questions 🐾"
 
 Important: NEVER provide specific medication dosages. Always say "Your vet can prescribe the right dosage based on your pet's weight and condition."`;
 
-// Models to try in order — if one is overloaded, fall back to the next
-const MODELS = [
-  "gemini-3.5-flash",
-  "gemini-3.5-flash-lite",
-  "gemini-2.5-flash",
-  "gemini-3.1-flash-lite",
-  "gemini-3.8-flash",
-];
-
-// Keep a lightweight in-memory history per session (cleared on server restart)
+// Keep a lightweight in-memory history per session
 const sessions = new Map();
-const MAX_HISTORY = 20;
-const MAX_RETRIES = 3;
+const MAX_HISTORY = 6; // Limit chat history to the last 4-6 messages so payloads stay small and fast
 
-// Helper: sleep ms
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// Helper: send message using configured model with fallback if 404
+const generateReply = async (message, history) => {
+  const modelsToTry = ["gemini-1.5-flash", "gemini-3.8-flash"];
 
-// Helper: try sending with retries and model fallback
-const tryGenerateReply = async (message, history) => {
-  const errors = [];
+  for (const modelName of modelsToTry) {
+    try {
+      const model = genAI.getGenerativeModel({
+        model: modelName,
+        generationConfig: {
+          maxOutputTokens: 300, // Keeps answers concise to prevent Vercel 10s timeouts
+          temperature: 0.7,
+        },
+      });
 
-  for (const modelName of MODELS) {
-    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-      try {
-        const model = genAI.getGenerativeModel({ model: modelName });
+      const chat = model.startChat({
+        history: [
+          { role: "user", parts: [{ text: "Hi, what can you help me with?" }] },
+          { role: "model", parts: [{ text: SYSTEM_PROMPT }] },
+          ...history,
+        ],
+      });
 
-        const chat = model.startChat({
-          history: [
-            { role: "user", parts: [{ text: "Hi, what can you help me with?" }] },
-            { role: "model", parts: [{ text: SYSTEM_PROMPT }] },
-            ...history,
-          ],
-        });
-
-        const result = await chat.sendMessage(message);
-        return result.response.text();
-      } catch (err) {
-        const errMsg = err?.message || String(err);
-        const is503 = errMsg.includes("503") || errMsg.includes("Service Unavailable") || errMsg.includes("overloaded");
-        const is429 = errMsg.includes("429") || errMsg.includes("quota") || errMsg.includes("rate");
-
-        console.warn(`[Chat] ${modelName} attempt ${attempt + 1}/${MAX_RETRIES}: ${is503 ? "503 overloaded" : is429 ? "429 rate limited" : errMsg.slice(0, 80)}`);
-        errors.push(`${modelName}:${errMsg.slice(0, 60)}`);
-
-        if (is503 || is429) {
-          // Exponential backoff: 2s, 4s, 8s
-          await sleep(2000 * Math.pow(2, attempt));
-          continue;
-        }
-        // For non-retryable errors (auth, bad request), throw immediately
-        throw err;
+      const result = await chat.sendMessage(message);
+      return result.response.text();
+    } catch (err) {
+      if (err.status === 404 && modelName !== modelsToTry[modelsToTry.length - 1]) {
+        continue;
       }
+      throw err;
     }
-    // All retries exhausted for this model, try next
   }
-
-  console.error("[Chat] All models exhausted:", errors.join(" | "));
-  throw new Error("SERVICE_UNAVAILABLE");
 };
 
 // POST /api/chat
@@ -97,33 +74,38 @@ const sendMessage = async (req, res) => {
     if (!sessions.has(chatKey)) {
       sessions.set(chatKey, []);
     }
-    const history = sessions.get(chatKey);
+    const sessionHistory = sessions.get(chatKey);
 
-    const reply = await tryGenerateReply(message.trim(), history);
+    // Limit chat history to the last 4-6 messages so payloads stay small and fast
+    const recentHistory = sessionHistory.slice(-MAX_HISTORY);
+
+    const reply = await generateReply(message.trim(), recentHistory);
 
     // Store in session
-    history.push(
+    sessionHistory.push(
       { role: "user", parts: [{ text: message.trim() }] },
       { role: "model", parts: [{ text: reply }] }
     );
+
     // Keep history bounded
-    if (history.length > MAX_HISTORY * 2) {
-      history.splice(0, history.length - MAX_HISTORY * 2);
+    if (sessionHistory.length > MAX_HISTORY) {
+      sessionHistory.splice(0, sessionHistory.length - MAX_HISTORY);
     }
 
-    return res.json({ reply });
-  } catch (err) {
-    console.error("Chat error:", err.message || err);
+    return res.json({ reply, message: reply });
+  } catch (error) {
+    console.error("PawBuddy Error Code/Message:", error.status, error.message);
 
-    if (err.message === "SERVICE_UNAVAILABLE") {
-      return res.status(503).json({
-        message: "PawBuddy is experiencing high demand right now. Please try again in a few seconds! 🐾",
-        retryable: true,
+    if (error.status === 429 || error?.message?.includes("429")) {
+      return res.status(429).json({
+        message: "PawBuddy is taking a quick 30-second breather! Please try again in a moment.",
+        reply: "PawBuddy is taking a quick 30-second breather! Please try again in a moment.",
       });
     }
 
     return res.status(500).json({
       message: "Sorry, I couldn't process your message right now. Please try again.",
+      reply: "Sorry, I couldn't process your message right now. Please try again.",
     });
   }
 };
