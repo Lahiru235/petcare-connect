@@ -80,12 +80,15 @@ const Chatbox = () => {
         { role: "bot", text: data.reply, ts: Date.now() },
       ]);
       if (!open) setHasUnread(true);
-    } catch {
+    } catch (err) {
       setMessages((m) => [
         ...m,
         {
           role: "bot",
-          text: "PawBuddy is experiencing high demand right now. Please wait a moment and try again! 🐾",
+          text:
+            err?.response?.data?.reply ||
+            err?.message ||
+            "PawBuddy is experiencing high demand right now. Please wait a moment and try again! 🐾",
           ts: Date.now(),
           error: true,
         },
@@ -126,12 +129,15 @@ const Chatbox = () => {
         ...m,
         { role: "bot", text: data.reply, ts: Date.now() },
       ]);
-    } catch {
+    } catch (err) {
       setMessages((m) => [
         ...m,
         {
           role: "bot",
-          text: "PawBuddy is experiencing high demand right now. Please wait a moment and try again! 🐾",
+          text:
+            err?.response?.data?.reply ||
+            err?.message ||
+            "PawBuddy is experiencing high demand right now. Please wait a moment and try again! 🐾",
           ts: Date.now(),
           error: true,
         },

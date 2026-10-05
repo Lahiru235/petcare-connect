@@ -26,37 +26,52 @@ Important: NEVER provide specific medication dosages. Always say "Your vet can p
 const sessions = new Map();
 const MAX_HISTORY = 6; // Limit chat history to the last 4-6 messages so payloads stay small and fast
 
-// Helper: send message using configured model with fallback if 404
+// Helper: sleep ms
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// 404 = model retired for this key, 429 = rate limited, 503 = overloaded
+const RETRYABLE_STATUSES = new Set([404, 429, 503]);
+
+// Helper: send message, retrying the same model then falling back to the next
 const generateReply = async (message, history) => {
-  const modelsToTry = ["gemini-1.5-flash", "gemini-3.8-flash"];
+  const modelsToTry = ["gemini-flash-lite-latest", "gemini-3.5-flash"];
+  const attemptsPerModel = 3;
+  let lastError = null;
 
   for (const modelName of modelsToTry) {
-    try {
-      const model = genAI.getGenerativeModel({
-        model: modelName,
-        generationConfig: {
-          maxOutputTokens: 300, // Keeps answers concise to prevent Vercel 10s timeouts
-          temperature: 0.7,
-        },
-      });
+    for (let attempt = 0; attempt < attemptsPerModel; attempt++) {
+      try {
+        const model = genAI.getGenerativeModel({
+          model: modelName,
+          generationConfig: {
+            maxOutputTokens: 1024,
+            temperature: 0.7,
+          },
+        });
 
-      const chat = model.startChat({
-        history: [
-          { role: "user", parts: [{ text: "Hi, what can you help me with?" }] },
-          { role: "model", parts: [{ text: SYSTEM_PROMPT }] },
-          ...history,
-        ],
-      });
+        const chat = model.startChat({
+          history: [
+            { role: "user", parts: [{ text: "Hi, what can you help me with?" }] },
+            { role: "model", parts: [{ text: SYSTEM_PROMPT }] },
+            ...history,
+          ],
+        });
 
-      const result = await chat.sendMessage(message);
-      return result.response.text();
-    } catch (err) {
-      if (err.status === 404 && modelName !== modelsToTry[modelsToTry.length - 1]) {
-        continue;
+        const result = await chat.sendMessage(message);
+        return result.response.text();
+      } catch (err) {
+        lastError = err;
+        // Bad key or malformed request — retrying will not help
+        if (!RETRYABLE_STATUSES.has(err.status)) throw err;
+        if (attempt < attemptsPerModel - 1) {
+          await sleep(1000 * Math.pow(2, attempt));
+        }
       }
-      throw err;
     }
+    // Attempts exhausted on this model — continue to the next one
   }
+
+  throw lastError;
 };
 
 // POST /api/chat
@@ -100,6 +115,13 @@ const sendMessage = async (req, res) => {
       return res.status(429).json({
         message: "PawBuddy is taking a quick 30-second breather! Please try again in a moment.",
         reply: "PawBuddy is taking a quick 30-second breather! Please try again in a moment.",
+      });
+    }
+
+    if (RETRYABLE_STATUSES.has(error.status)) {
+      return res.status(503).json({
+        message: "PawBuddy is busy right now. Please try again in a moment!",
+        reply: "PawBuddy is busy right now. Please try again in a moment!",
       });
     }
 

@@ -27,13 +27,17 @@ api.interceptors.response.use(
     }
 
     // The API answered: always surface what the server actually said.
+    // Keep `response` attached so callers can branch on the status code.
     if (error.response) {
       const data = error.response.data;
       const message =
         (typeof data === "string" && data) ||
         data?.message ||
         `Request failed with status ${status}.`;
-      return Promise.reject(new Error(message));
+      const normalised = new Error(message);
+      normalised.response = error.response;
+      normalised.status = status;
+      return Promise.reject(normalised);
     }
 
     // No response at all, so the request never reached the API. Say which
