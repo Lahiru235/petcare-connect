@@ -31,24 +31,29 @@ app.use(
   })
 );
 
-const allowedOrigins = [
-  process.env.CLIENT_URL,
-  ...(process.env.CLIENT_URLS ? process.env.CLIENT_URLS.split(",").map((s) => s.trim()) : []),
-  "https://petcare-connect-w58z.vercel.app",
-  "http://localhost:5173",
-  "http://127.0.0.1:5173",
-]
-  .filter(Boolean)
-  .map((o) => o.replace(/\/+$/, ""));
+// Resilient CORS and preflight OPTIONS handler
+app.use((req, res, next) => {
+  const allowedOrigins = [
+    "https://petcare-connect-w58z.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:5000",
+    process.env.CLIENT_URL,
+    ...(process.env.CLIENT_URLS ? process.env.CLIENT_URLS.split(",").map((s) => s.trim()) : []),
+  ].filter(Boolean);
 
-const corsOptions = {
-  origin: [...new Set(allowedOrigins)],
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-};
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin) || !origin) {
+    res.setHeader("Access-Control-Allow-Origin", origin || "*");
+  }
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
 
-app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+  next();
+});
 
 app.use(express.json({ limit: "1mb" }));
 app.use(morgan("dev"));
@@ -58,32 +63,32 @@ app.get(["/api/health", "/health"], (req, res) =>
 );
 
 // Route groups registered BOTH with and without '/api' prefix
-app.use("/api/auth", authRoutes);
 app.use("/auth", authRoutes);
+app.use("/api/auth", authRoutes);
 
-app.use("/api/pets", petRoutes);
 app.use("/pets", petRoutes);
+app.use("/api/pets", petRoutes);
 
-app.use("/api/appointments", appointmentRoutes);
 app.use("/appointments", appointmentRoutes);
+app.use("/api/appointments", appointmentRoutes);
 
-app.use("/api/records", recordRoutes);
 app.use("/records", recordRoutes);
+app.use("/api/records", recordRoutes);
 
-app.use("/api/schedules", scheduleRoutes);
 app.use("/schedules", scheduleRoutes);
+app.use("/api/schedules", scheduleRoutes);
 
-app.use("/api/notifications", notificationRoutes);
 app.use("/notifications", notificationRoutes);
+app.use("/api/notifications", notificationRoutes);
 
-app.use("/api/admin", adminRoutes);
 app.use("/admin", adminRoutes);
+app.use("/api/admin", adminRoutes);
 
-app.use("/api/chat", chatRoutes);
 app.use("/chat", chatRoutes);
+app.use("/api/chat", chatRoutes);
 
-app.use("/api/payments", paymentRoutes);
 app.use("/payments", paymentRoutes);
+app.use("/api/payments", paymentRoutes);
 
 // --- Root Route (Add this here!) ---
 app.get("/", (req, res) => {
