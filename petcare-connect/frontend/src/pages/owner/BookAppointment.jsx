@@ -11,6 +11,7 @@ const BookAppointment = () => {
   const { user } = useAuth();
   const [pets, setPets] = useState([]);
   const [vets, setVets] = useState([]);
+  const [allSpecialisations, setAllSpecialisations] = useState([]);
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searching, setSearching] = useState(false);
@@ -25,12 +26,25 @@ const BookAppointment = () => {
 
   const set = (patch) => setForm((f) => ({ ...f, ...patch }));
 
+  // Helper: trim, capitalize first letter, and deduplicate specialisations
+  const normalizeSpecialisations = (vetList = []) => [
+    ...new Set(
+      vetList
+        .map((v) => v.specialisation)
+        .filter(Boolean)
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0)
+        .map((s) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase())
+    ),
+  ].sort((a, b) => a.localeCompare(b));
+
   useEffect(() => {
     Promise.all([petApi.list(), scheduleApi.vets()])
       .then(([p, v]) => {
         setPets(p.data.pets);
         setVets(v.data.vets);
         if (p.data.pets[0]) set({ pet: p.data.pets[0]._id });
+        setAllSpecialisations(normalizeSpecialisations(v.data.vets));
       })
       .finally(() => setLoading(false));
   }, []);
@@ -117,7 +131,10 @@ const BookAppointment = () => {
   if (!pets.length)
     return <Empty title="Add a pet first" hint="An appointment needs a pet profile." action={<a className="btn" href="/owner/pets">Add a pet</a>} />;
 
-  const specialisations = [...new Set(vets.map((v) => v.specialisation).filter(Boolean))];
+  const specialisations =
+    allSpecialisations.length > 0
+      ? allSpecialisations
+      : normalizeSpecialisations(vets);
 
   return (
     <>
@@ -138,7 +155,7 @@ const BookAppointment = () => {
           <Field label="Specialisation">
             <select value={form.specialisation} onChange={(e) => filterVets(e.target.value)}>
               <option value="">Any</option>
-              {specialisations.map((s) => <option key={s}>{s}</option>)}
+              {specialisations.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
           </Field>
         </div>
