@@ -31,47 +31,59 @@ app.use(
   })
 );
 
-// Allow every configured origin instead of a single hardcoded one, so that
-// localhost, 127.0.0.1 and ::1 are all accepted.
-const allowedOrigins = (
-  process.env.CLIENT_URLS || process.env.CLIENT_URL || "http://localhost:5173"
-)
-  .split(",")
-  .map((o) => o.trim().replace(/\/+$/, ""))
-  .filter(Boolean);
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  ...(process.env.CLIENT_URLS ? process.env.CLIENT_URLS.split(",").map((s) => s.trim()) : []),
+  "https://petcare-connect-w58z.vercel.app",
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+]
+  .filter(Boolean)
+  .map((o) => o.replace(/\/+$/, ""));
 
-const isLocalDevOrigin = (origin) =>
-  /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\]|0\.0\.0\.0)(:\d+)?$/.test(origin);
+const corsOptions = {
+  origin: [...new Set(allowedOrigins)],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+};
 
-app.use(
-  cors({
-    origin(origin, callback) {
-      // No Origin header means curl, Postman or a native client.
-      if (!origin) return callback(null, true);
-      const normalised = origin.replace(/\/+$/, "");
-      if (allowedOrigins.includes(normalised)) return callback(null, true);
-      if (process.env.NODE_ENV !== "production" && isLocalDevOrigin(normalised)) {
-        return callback(null, true);
-      }
-      return callback(new Error(`Origin ${origin} is not allowed by CORS`));
-    },
-    credentials: true,
-  })
-);
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
+
 app.use(express.json({ limit: "1mb" }));
 app.use(morgan("dev"));
 
-app.get("/api/health", (req, res) => res.json({ status: "ok", service: "PetCare Connect API" }));
+app.get(["/api/health", "/health"], (req, res) =>
+  res.json({ status: "ok", service: "PetCare Connect API" })
+);
 
+// Route groups registered BOTH with and without '/api' prefix
 app.use("/api/auth", authRoutes);
+app.use("/auth", authRoutes);
+
 app.use("/api/pets", petRoutes);
+app.use("/pets", petRoutes);
+
 app.use("/api/appointments", appointmentRoutes);
+app.use("/appointments", appointmentRoutes);
+
 app.use("/api/records", recordRoutes);
+app.use("/records", recordRoutes);
+
 app.use("/api/schedules", scheduleRoutes);
+app.use("/schedules", scheduleRoutes);
+
 app.use("/api/notifications", notificationRoutes);
+app.use("/notifications", notificationRoutes);
+
 app.use("/api/admin", adminRoutes);
+app.use("/admin", adminRoutes);
+
 app.use("/api/chat", chatRoutes);
+app.use("/chat", chatRoutes);
+
 app.use("/api/payments", paymentRoutes);
+app.use("/payments", paymentRoutes);
 
 // --- Root Route (Add this here!) ---
 app.get("/", (req, res) => {
