@@ -32,18 +32,55 @@ app.use(
 );
 
 // Resilient CORS and preflight OPTIONS handler
-app.use((req, res, next) => {
-  const allowedOrigins = [
-    "https://petcare-connect-w58z.vercel.app",
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
+  if (allowedOrigins.has(origin)) return true;
+  // Vercel preview deployments get a new hash on every push, so accept any
+  // subdomain of the project as well as whatever CLIENT_URLS lists.
+  try {
+    const { hostname } = new URL(origin);
+    if (hostname.endsWith(".vercel.app")) return true;
+    if (allowedHosts.has(hostname)) return true;
+  } catch {
+    return false;
+  }
+  return false;
+};
+
+const allowedOrigins = new Set(
+  [
     "http://localhost:5173",
+    "http://127.0.0.1:5173",
     "http://localhost:5000",
     process.env.CLIENT_URL,
     ...(process.env.CLIENT_URLS ? process.env.CLIENT_URLS.split(",").map((s) => s.trim()) : []),
-  ].filter(Boolean);
+  ]
+    .filter(Boolean)
+    .map((o) => {
+      try {
+        return new URL(o).origin;
+      } catch {
+        return o;
+      }
+    })
+);
 
+// Hostnames allowed regardless of scheme, so the same list covers http and https
+const allowedHosts = new Set(
+  [...allowedOrigins].map((o) => {
+    try {
+      return new URL(o).hostname;
+    } catch {
+      return o;
+    }
+  })
+);
+
+app.use((req, res, next) => {
   const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin) || !origin) {
+  if (isAllowedOrigin(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin || "*");
+    res.setHeader("Vary", "Origin");
   }
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");

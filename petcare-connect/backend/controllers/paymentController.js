@@ -1,5 +1,17 @@
 const Stripe = require("stripe");
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+// Built on first use: new Stripe() throws when the key is missing, and doing
+// that at import time would take down every route, chat included.
+let stripeClient = null;
+const getStripe = () => {
+  if (!stripeClient) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error("Stripe is not configured: STRIPE_SECRET_KEY is missing");
+    }
+    stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY);
+  }
+  return stripeClient;
+};
 const Payment = require("../models/Payment");
 const Appointment = require("../models/Appointment");
 const Notification = require("../models/Notification");
@@ -24,7 +36,7 @@ const createPayment = async (req, res, next) => {
     const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
 
     // Create Stripe Checkout Session
-    const session = await stripe.checkout.sessions.create({
+    const session = await getStripe().checkout.sessions.create({
       mode: "payment",
       line_items: [
         {
@@ -83,7 +95,7 @@ const verifySession = async (req, res, next) => {
       return res.status(400).json({ message: "Session ID is required" });
     }
 
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    const session = await getStripe().checkout.sessions.retrieve(sessionId);
     if (!session) {
       return res.status(404).json({ message: "Session not found" });
     }
