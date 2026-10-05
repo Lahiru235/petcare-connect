@@ -1,134 +1,119 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const Groq = require("groq-sdk");
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
+const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.1-8b-instant';
 
-const SYSTEM_PROMPT = `You are PawBuddy 🐾, the friendly and knowledgeable AI assistant for PetCare Connect — a veterinary clinic and pet care platform.
+let groq = null;
+if (GROQ_API_KEY) {
+  groq = new Groq({ apiKey: GROQ_API_KEY });
+}
+
+const SYSTEM_PROMPT = `You are PawBuddy 🐾, the warm, knowledgeable, and empathetic AI pet assistant for PetCare Connect (a veterinary clinic and pet care platform).
 
 Your expertise covers:
-• General pet health & wellness tips (dogs, cats, birds, rabbits, fish, reptiles)
-• Nutrition, diet, and feeding schedules
-• Common symptoms and when to see a vet (always recommend visiting a professional for serious concerns)
-• Pet grooming and hygiene
-• Training and behavioral advice
+• General pet health, nutrition, diet, and wellness tips for dogs, cats, birds, rabbits, and other pets
+• Common symptoms, first-aid, and guidance on when to consult a veterinarian
+• Grooming, training, behavioral advice, and socialization
 • Vaccination schedules and preventive care
-• Post-surgery / post-treatment care tips
 
-Personality:
-- Warm, empathetic, and encouraging
-- Use occasional pet-related emojis (🐾 🐶 🐱 🐰 🐦 🐠)
-- Keep answers concise (1-2 short paragraphs max)
-- Always remind users to consult their veterinarian for medical emergencies or serious health concerns
-- If asked about non-pet topics, gently redirect: "I'm PawBuddy, your pet care specialist! I'd love to help with any pet-related questions 🐾"
+Guidelines:
+- Maintain a warm, encouraging, pet-loving tone with occasional friendly emojis (🐾, 🐶, 🐱)
+- Keep responses concise, clear, and easy to read (use short paragraphs or bullet points)
+- For medical emergencies or serious health conditions, always remind owners to see a veterinarian immediately
+- Never prescribe prescription medication dosages; advise consulting their veterinarian
+- If asked about non-pet topics, gently redirect back to pet care`;
 
-Important: NEVER provide specific medication dosages. Always say "Your vet can prescribe the right dosage based on your pet's weight and condition."`;
-
-// Keep a lightweight in-memory history per session
+// In-memory conversation history per session
 const sessions = new Map();
-const MAX_HISTORY = 6; // Limit chat history to the last 4-6 messages so payloads stay small and fast
+const MAX_HISTORY = 6; // Keep the last 6 messages (3 turns) for quick, small payloads
 
-// Helper: sleep ms
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+/**
+ * Call Groq Cloud API for chat completion
+ */
+const callGroqApi = async (messages) => {
+  const client = groq || (process.env.GROQ_API_KEY ? new Groq({ apiKey: process.env.GROQ_API_KEY }) : null);
 
-// 404 = model retired for this key, 429 = rate limited, 503 = overloaded
-const RETRYABLE_STATUSES = new Set([404, 429, 503]);
-
-// Helper: send message, retrying the same model then falling back to the next
-const generateReply = async (message, history) => {
-  const modelsToTry = ["gemini-flash-lite-latest", "gemini-3.5-flash"];
-  const attemptsPerModel = 3;
-  let lastError = null;
-
-  for (const modelName of modelsToTry) {
-    for (let attempt = 0; attempt < attemptsPerModel; attempt++) {
-      try {
-        const model = genAI.getGenerativeModel({
-          model: modelName,
-          generationConfig: {
-            maxOutputTokens: 1024,
-            temperature: 0.7,
-          },
-        });
-
-        const chat = model.startChat({
-          history: [
-            { role: "user", parts: [{ text: "Hi, what can you help me with?" }] },
-            { role: "model", parts: [{ text: SYSTEM_PROMPT }] },
-            ...history,
-          ],
-        });
-
-        const result = await chat.sendMessage(message);
-        return result.response.text();
-      } catch (err) {
-        lastError = err;
-        // Bad key or malformed request — retrying will not help
-        if (!RETRYABLE_STATUSES.has(err.status)) throw err;
-        if (attempt < attemptsPerModel - 1) {
-          await sleep(1000 * Math.pow(2, attempt));
-        }
-      }
-    }
-    // Attempts exhausted on this model — continue to the next one
+  if (!client) {
+    const error = new Error("Groq API key not configured");
+    error.status = 503;
+    throw error;
   }
 
-  throw lastError;
+  const completion = await client.chat.completions.create({
+    model: GROQ_MODEL,
+    messages,
+    max_tokens: 400,
+    temperature: 0.7,
+  });
+
+  const choice = completion.choices?.[0]?.message;
+  const reply = (choice?.content || "").trim();
+
+  if (!reply) {
+    throw new Error("Empty response received from Groq");
+  }
+
+  return reply;
 };
 
 // POST /api/chat
 const sendMessage = async (req, res) => {
   try {
+    const currentApiKey = process.env.GROQ_API_KEY || GROQ_API_KEY;
+    if (!currentApiKey) {
+      return res.status(503).json({
+        message: "PawBuddy is temporarily unavailable (Groq API key not configured).",
+        reply: "PawBuddy is temporarily unavailable (Groq API key not configured).",
+      });
+    }
+
     const { message, sessionId } = req.body;
     if (!message || typeof message !== "string" || !message.trim()) {
       return res.status(400).json({ message: "Message is required" });
     }
 
-    // Use authenticated user ID if available, otherwise use client sessionId
+    const trimmedMsg = message.trim();
+    // Session key: user ID if authenticated, else client-supplied sessionId or fallback
     const chatKey = req.user ? req.user._id.toString() : (sessionId || "anonymous");
 
-    // Retrieve or create session history
     if (!sessions.has(chatKey)) {
       sessions.set(chatKey, []);
     }
     const sessionHistory = sessions.get(chatKey);
 
-    // Limit chat history to the last 4-6 messages so payloads stay small and fast
+    // Limit previous context to last MAX_HISTORY messages
     const recentHistory = sessionHistory.slice(-MAX_HISTORY);
 
-    const reply = await generateReply(message.trim(), recentHistory);
+    // Build messages payload for Groq
+    const groqMessages = [
+      { role: "system", content: SYSTEM_PROMPT },
+      ...recentHistory,
+      { role: "user", content: trimmedMsg },
+    ];
 
-    // Store in session
+    const reply = await callGroqApi(groqMessages);
+
+    // Update session history
     sessionHistory.push(
-      { role: "user", parts: [{ text: message.trim() }] },
-      { role: "model", parts: [{ text: reply }] }
+      { role: "user", content: trimmedMsg },
+      { role: "assistant", content: reply }
     );
 
-    // Keep history bounded
     if (sessionHistory.length > MAX_HISTORY) {
       sessionHistory.splice(0, sessionHistory.length - MAX_HISTORY);
     }
 
     return res.json({ reply, message: reply });
   } catch (error) {
-    console.error("PawBuddy Error Code/Message:", error.status, error.message);
+    console.error("PawBuddy (Groq) Error:", error.status || 500, error.message);
 
-    if (error.status === 429 || error?.message?.includes("429")) {
-      return res.status(429).json({
-        message: "PawBuddy is taking a quick 30-second breather! Please try again in a moment.",
-        reply: "PawBuddy is taking a quick 30-second breather! Please try again in a moment.",
-      });
+    if (error.status === 429 || error?.message?.includes("429") || error?.message?.includes("rate")) {
+      const msg = "PawBuddy is taking a quick 30-second breather! Please try again in a moment. 🐾";
+      return res.status(429).json({ message: msg, reply: msg });
     }
 
-    if (RETRYABLE_STATUSES.has(error.status)) {
-      return res.status(503).json({
-        message: "PawBuddy is busy right now. Please try again in a moment!",
-        reply: "PawBuddy is busy right now. Please try again in a moment!",
-      });
-    }
-
-    return res.status(500).json({
-      message: "Sorry, I couldn't process your message right now. Please try again.",
-      reply: "Sorry, I couldn't process your message right now. Please try again.",
-    });
+    const fallbackMsg = "Sorry, PawBuddy couldn't process your question right now. Please try again in a moment! 🐾";
+    return res.status(error.status || 500).json({ message: fallbackMsg, reply: fallbackMsg });
   }
 };
 

@@ -1563,6 +1563,21 @@ tbody tr:hover { background: #faf8f4; }
   border-color: #f5c6bb;
   color: #b8372b;
 }
+.chatbox-md-h {
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin: 8px 0 4px;
+  color: var(--forest);
+}
+.chatbox-md-li {
+  margin: 4px 0;
+  line-height: 1.45;
+}
+.chatbox-num {
+  font-weight: 600;
+  color: var(--forest);
+}
 .chatbox-msg-bubble code {
   background: rgba(45, 122, 71, 0.08);
   padding: 1px 5px;

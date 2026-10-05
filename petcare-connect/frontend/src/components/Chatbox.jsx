@@ -3,12 +3,19 @@ import { chatApi } from "../api/services";
 import { useAuth } from "../context/AuthContext";
 
 /* ───────── tiny markdown-ish formatter ───────── */
-const fmt = (text) =>
-  text
+const fmt = (text) => {
+  if (!text) return "";
+  return text
+    .replace(/^###\s*(.+)$/gm, "<div class='chatbox-md-h'>$1</div>")
+    .replace(/^##\s*(.+)$/gm, "<div class='chatbox-md-h'>$1</div>")
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
     .replace(/`(.+?)`/g, "<code>$1</code>")
+    .replace(/^\s*[\*\-]\s+(.+)$/gm, "<div class='chatbox-md-li'>• $1</div>")
+    .replace(/^\s*(\d+)\.\s+(.+)$/gm, "<div class='chatbox-md-li'><span class='chatbox-num'>$1.</span> $2</div>")
+    .replace(/\n\n+/g, "<br/><br/>")
     .replace(/\n/g, "<br/>");
+};
 
 const GREETING = `Hey there! 🐾 I'm **PawBuddy**, your pet care assistant.\n\nAsk me anything about pet health, nutrition, grooming, training, or when to visit the vet!`;
 
@@ -77,7 +84,7 @@ const Chatbox = () => {
       const { data } = await sendToApi(text);
       setMessages((m) => [
         ...m,
-        { role: "bot", text: data.reply, ts: Date.now() },
+        { role: "bot", text: data?.reply || data?.message, ts: Date.now() },
       ]);
       if (!open) setHasUnread(true);
     } catch (err) {
@@ -87,6 +94,7 @@ const Chatbox = () => {
           role: "bot",
           text:
             err?.response?.data?.reply ||
+            err?.response?.data?.message ||
             err?.message ||
             "PawBuddy is experiencing high demand right now. Please wait a moment and try again! 🐾",
           ts: Date.now(),
@@ -127,7 +135,7 @@ const Chatbox = () => {
       const { data } = await sendToApi(q);
       setMessages((m) => [
         ...m,
-        { role: "bot", text: data.reply, ts: Date.now() },
+        { role: "bot", text: data?.reply || data?.message, ts: Date.now() },
       ]);
     } catch (err) {
       setMessages((m) => [
@@ -136,6 +144,7 @@ const Chatbox = () => {
           role: "bot",
           text:
             err?.response?.data?.reply ||
+            err?.response?.data?.message ||
             err?.message ||
             "PawBuddy is experiencing high demand right now. Please wait a moment and try again! 🐾",
           ts: Date.now(),
