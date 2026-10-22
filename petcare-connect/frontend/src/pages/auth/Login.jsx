@@ -4,25 +4,13 @@ import { useAuth, homeFor } from "../../context/AuthContext";
 import { Alert, Field, useForm } from "../../components/UI";
 import AuthArt from "./AuthArt";
 
-const DEMO_ACCOUNTS = [
-  { role: "Pet Owner", email: "owner@petcare.lk", pass: "owner123", icon: "🐾" },
-  { role: "Doctor / Vet", email: "kasun@petcare.lk", pass: "doctor123", icon: "🩺" },
-  { role: "Reception", email: "reception@petcare.lk", pass: "reception123", icon: "📋" },
-  { role: "Admin", email: "admin@petcare.lk", pass: "admin123", icon: "⚡" },
-];
-
 const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const { values, setValues, onChange } = useForm({ email: "", password: "" });
+  const { values, onChange } = useForm({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-
-  const fillDemo = (acc) => {
-    setValues({ email: acc.email, password: acc.pass });
-    setError("");
-  };
 
   const submit = async (e) => {
     e.preventDefault();
@@ -118,27 +106,6 @@ const Login = () => {
                 <Link to="/register" className="auth-switch-link">
                   Create an account
                 </Link>
-              </div>
-
-              {/* Quick Fill Demo Helper */}
-              <div className="demo-quickfill">
-                <div className="demo-quickfill-head">
-                  <span className="demo-quickfill-badge">⚡ Quick Fill Demo</span>
-                </div>
-                <div className="demo-chips">
-                  {DEMO_ACCOUNTS.map((acc) => (
-                    <button
-                      key={acc.role}
-                      type="button"
-                      className="demo-chip-btn"
-                      onClick={() => fillDemo(acc)}
-                      title={`Fill as ${acc.role} (${acc.email})`}
-                    >
-                      <span className="demo-chip-icon">{acc.icon}</span>
-                      <span>{acc.role}</span>
-                    </button>
-                  ))}
-                </div>
               </div>
             </form>
           </div>
