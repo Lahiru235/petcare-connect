@@ -3,14 +3,18 @@ const Pet = require("../models/Pet");
 const Schedule = require("../models/Schedule");
 const Notification = require("../models/Notification");
 const User = require("../models/User");
-const { overlaps, toMinutes, toHHMM } = require("../utils/timeUtils");
+const { overlaps, toMinutes, toHHMM, getSriLankaToday, getSriLankaCurrentTime } = require("../utils/timeUtils");
 
 const notify = (user, title, message, type) =>
   Notification.create({ user, title, message, type }).catch(() => {});
 
 // FR-07: reject a slot that clashes with another booking or a blocked period
 const isSlotFree = async ({ doctor, date, startTime, endTime, ignoreId = null }) => {
-  const query = { doctor, date, status: "Scheduled" };
+  const slToday = getSriLankaToday();
+  const slNowTime = getSriLankaCurrentTime();
+  if (date < slToday || (date === slToday && startTime <= slNowTime)) return false;
+
+  const query = { doctor, date, status: { $in: ["Scheduled", "Completed"] } };
   if (ignoreId) query._id = { $ne: ignoreId };
 
   const existing = await Appointment.find(query);
@@ -33,6 +37,12 @@ const createAppointment = async (req, res, next) => {
   try {
     const { pet: petId, doctor, date, startTime, reason = "", slotMinutes = 30, bookingChannel } = req.body;
 
+    const slToday = getSriLankaToday();
+    const slNowTime = getSriLankaCurrentTime();
+    if (date < slToday || (date === slToday && startTime <= slNowTime)) {
+      return res.status(400).json({ message: "Cannot book an appointment for a past time slot." });
+    }
+
     const pet = await Pet.findById(petId);
     if (!pet || !pet.isActive) return res.status(400).json({ message: "Select an active pet profile" });
     if (req.user.role === "owner" && String(pet.owner) !== String(req.user._id)) {
@@ -46,7 +56,7 @@ const createAppointment = async (req, res, next) => {
 
     const endTime = req.body.endTime || toHHMM(toMinutes(startTime) + Number(slotMinutes));
     if (!(await isSlotFree({ doctor, date, startTime, endTime }))) {
-      return res.status(409).json({ message: "That slot is already taken. Pick another time." });
+      return res.status(409).json({ message: "Already this time slot is booked. Pick another time." });
     }
 
     const appointment = await Appointment.create({
@@ -73,7 +83,7 @@ const createAppointment = async (req, res, next) => {
 
     res.status(201).json({ appointment: populated, message: "Appointment booked" });
   } catch (err) {
-    if (err.code === 11000) return res.status(409).json({ message: "That slot is already taken. Pick another time." });
+    if (err.code === 11000) return res.status(409).json({ message: "Already this time slot is booked. Pick another time." });
     next(err);
   }
 };
@@ -141,8 +151,14 @@ const rescheduleAppointment = async (req, res, next) => {
     const doctor = req.body.doctor || appointment.doctor;
     const endTime = req.body.endTime || toHHMM(toMinutes(startTime) + Number(req.body.slotMinutes || 30));
 
+    const slToday = getSriLankaToday();
+    const slNowTime = getSriLankaCurrentTime();
+    if (date < slToday || (date === slToday && startTime <= slNowTime)) {
+      return res.status(400).json({ message: "Cannot reschedule to a past time slot." });
+    }
+
     if (!(await isSlotFree({ doctor, date, startTime, endTime, ignoreId: appointment._id }))) {
-      return res.status(409).json({ message: "That slot is already taken. Pick another time." });
+      return res.status(409).json({ message: "Already this time slot is booked. Pick another time." });
     }
 
     Object.assign(appointment, { date, startTime, endTime, doctor, reason: req.body.reason ?? appointment.reason });

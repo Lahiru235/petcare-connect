@@ -1,7 +1,7 @@
 const Schedule = require("../models/Schedule");
 const Appointment = require("../models/Appointment");
 const User = require("../models/User");
-const { buildSlots, overlaps } = require("../utils/timeUtils");
+const { buildSlots, overlaps, getSriLankaToday, getSriLankaCurrentTime } = require("../utils/timeUtils");
 
 // @desc  Create a working block or a leave block (FR-08)  @route POST /api/schedules
 // @access admin, receptionist, doctor(own)
@@ -71,7 +71,7 @@ const deleteSchedule = async (req, res, next) => {
   }
 };
 
-// @desc  Free slots of one vet on one date (FR-05)  @route GET /api/schedules/availability?doctor=&date=
+// @desc  Slots of one vet on one date with booking status (FR-05)  @route GET /api/schedules/availability?doctor=&date=
 // @access Private
 const getAvailability = async (req, res, next) => {
   try {
@@ -89,13 +89,43 @@ const getAvailability = async (req, res, next) => {
       slots = slots.concat(buildSlots(b.startTime, b.endTime, b.slotMinutes));
     });
 
-    const free = slots.filter((s) => {
-      const isBooked = booked.some((a) => overlaps(s.startTime, s.endTime, a.startTime, a.endTime));
-      const isBlocked = blocked.some((b) => overlaps(s.startTime, s.endTime, b.startTime, b.endTime));
-      return !isBooked && !isBlocked;
+    // Sri Lanka time filtering (Asia/Colombo UTC+05:30)
+    const slToday = getSriLankaToday();
+    const slNowTime = getSriLankaCurrentTime();
+    const isPastDate = date < slToday;
+    const isToday = date === slToday;
+
+    // Filter out slots that have already passed if the appointment date is today (or past)
+    const activeSlots = slots.filter((s) => {
+      if (isPastDate) return false;
+      if (isToday && s.startTime <= slNowTime) return false;
+      return true;
     });
 
-    res.json({ date, doctor, count: free.length, slots: free });
+    const evaluated = activeSlots
+      .map((s) => {
+        const isBooked = booked.some((a) => overlaps(s.startTime, s.endTime, a.startTime, a.endTime));
+        const isBlocked = blocked.some((b) => overlaps(s.startTime, s.endTime, b.startTime, b.endTime));
+        return {
+          ...s,
+          isBooked,
+          isBlocked,
+          available: !isBooked && !isBlocked,
+        };
+      })
+      .filter((s) => !s.isBlocked);
+
+    const freeCount = evaluated.filter((s) => s.available).length;
+
+    res.json({
+      date,
+      doctor,
+      count: freeCount,
+      totalSlots: evaluated.length,
+      slots: evaluated,
+      isToday,
+      isPastDate,
+    });
   } catch (err) {
     next(err);
   }

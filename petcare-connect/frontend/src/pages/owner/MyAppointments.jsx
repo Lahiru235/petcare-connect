@@ -48,8 +48,15 @@ const MyAppointments = () => {
 
   const findSlots = async () => {
     const { data } = await scheduleApi.availability({ doctor: moving.doctor._id, date: draft.date });
-    setSlots(data.slots);
-    if (!data.slots.length) setError("No free slots that day. Try another date.");
+    const returnedSlots = data.slots || [];
+    setSlots(returnedSlots);
+    const availableCount = returnedSlots.filter((s) => !s.isBooked).length;
+    if (!returnedSlots.length) {
+      if (draft.date === todayStr()) setError("All time slots for today have already passed. Try another date.");
+      else setError("No working hours for this veterinarian on this date. Try another date.");
+    } else if (availableCount === 0) {
+      setError("All remaining time slots are booked for this day. Try another date.");
+    }
   };
 
   const confirmMove = async () => {
@@ -171,15 +178,30 @@ const MyAppointments = () => {
           <Field label="New date">
             <input type="date" min={todayStr()} value={draft.date} onChange={(e) => { setDraft({ ...draft, date: e.target.value, startTime: "" }); setSlots([]); }} />
           </Field>
-          <button className="btn btn-ghost" type="button" onClick={findSlots}>Show free slots</button>
+          <button className="btn btn-ghost" type="button" onClick={findSlots}>Show time slots</button>
 
           {slots.length > 0 && (
             <div className="slot-grid" style={{ margin: "1rem 0" }}>
-              {slots.map((s) => (
-                <button key={s.startTime} type="button"
-                  className={`slot ${draft.startTime === s.startTime ? "selected" : ""}`}
-                  onClick={() => setDraft({ ...draft, startTime: s.startTime })}>{s.startTime}</button>
-              ))}
+              {slots.map((s) => {
+                const isBooked = Boolean(s.isBooked);
+                const isSelected = draft.startTime === s.startTime;
+                return (
+                  <button key={s.startTime} type="button"
+                    className={`slot ${isBooked ? "slot-booked" : ""} ${isSelected ? "selected" : ""}`}
+                    onClick={() => {
+                      if (isBooked) {
+                        setError(`Already this time slot (${s.startTime}) is booked`);
+                        return;
+                      }
+                      setError("");
+                      setDraft({ ...draft, startTime: s.startTime });
+                    }}
+                    title={isBooked ? `Already this time slot (${s.startTime}) is booked` : ""}>
+                    <span>{s.startTime}</span>
+                    {isBooked && <span className="slot-booked-label">Booked</span>}
+                  </button>
+                );
+              })}
             </div>
           )}
 

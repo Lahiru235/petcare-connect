@@ -46,8 +46,15 @@ const ManageAppointments = () => {
   const findSlots = async () => {
     if (!form.doctor) return setError("Choose a veterinarian first");
     const { data } = await scheduleApi.availability({ doctor: form.doctor, date: form.date });
-    setSlots(data.slots);
-    if (!data.slots.length) setError("No free slots that day");
+    const returnedSlots = data.slots || [];
+    setSlots(returnedSlots);
+    const availableCount = returnedSlots.filter((s) => !s.isBooked).length;
+    if (!returnedSlots.length) {
+      if (form.date === todayStr()) setError("All time slots for today have already passed. Please select tomorrow or a future date.");
+      else setError("No working hours for this veterinarian on this date.");
+    } else if (availableCount === 0) {
+      setError("All remaining time slots are booked for this day.");
+    }
   };
 
   const book = async (e) => {
@@ -151,14 +158,29 @@ const ManageAppointments = () => {
               </Field>
             </div>
 
-            <button type="button" className="btn btn-ghost" onClick={findSlots}>Show free slots</button>
+            <button type="button" className="btn btn-ghost" onClick={findSlots}>Show time slots</button>
             {slots.length > 0 && (
               <div className="slot-grid" style={{ margin: "1rem 0" }}>
-                {slots.map((s) => (
-                  <button key={s.startTime} type="button"
-                    className={`slot ${form.startTime === s.startTime ? "selected" : ""}`}
-                    onClick={() => set({ startTime: s.startTime })}>{s.startTime}</button>
-                ))}
+                {slots.map((s) => {
+                  const isBooked = Boolean(s.isBooked);
+                  const isSelected = form.startTime === s.startTime;
+                  return (
+                    <button key={s.startTime} type="button"
+                      className={`slot ${isBooked ? "slot-booked" : ""} ${isSelected ? "selected" : ""}`}
+                      onClick={() => {
+                        if (isBooked) {
+                          setError(`Already this time slot (${s.startTime}) is booked`);
+                          return;
+                        }
+                        setError("");
+                        set({ startTime: s.startTime });
+                      }}
+                      title={isBooked ? `Already this time slot (${s.startTime}) is booked` : ""}>
+                      <span>{s.startTime}</span>
+                      {isBooked && <span className="slot-booked-label">Booked</span>}
+                    </button>
+                  );
+                })}
               </div>
             )}
 

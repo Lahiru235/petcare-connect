@@ -22,4 +22,30 @@ const buildSlots = (startTime, endTime, slotMinutes = 30) => {
 const overlaps = (aStart, aEnd, bStart, bEnd) =>
   toMinutes(aStart) < toMinutes(bEnd) && toMinutes(bStart) < toMinutes(aEnd);
 
-module.exports = { toMinutes, toHHMM, buildSlots, overlaps };
+// Sri Lanka timezone helpers (Asia/Colombo UTC+05:30)
+const getSriLankaToday = () => {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Colombo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+};
+
+const getSriLankaCurrentTime = () => {
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Colombo",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(new Date());
+};
+
+module.exports = {
+  toMinutes,
+  toHHMM,
+  buildSlots,
+  overlaps,
+  getSriLankaToday,
+  getSriLankaCurrentTime,
+};

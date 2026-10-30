@@ -63,8 +63,18 @@ const BookAppointment = () => {
     setMsg({ error: "", ok: "" });
     try {
       const { data } = await scheduleApi.availability({ doctor: form.doctor, date: form.date });
-      setSlots(data.slots);
-      if (!data.slots.length) setMsg({ error: "No free slots that day. Try another date.", ok: "" });
+      const returnedSlots = data.slots || [];
+      setSlots(returnedSlots);
+      const availableCount = returnedSlots.filter((s) => !s.isBooked).length;
+      if (!returnedSlots.length) {
+        if (form.date === todayStr()) {
+          setMsg({ error: "All time slots for today have already passed. Please select tomorrow or a future date.", ok: "" });
+        } else {
+          setMsg({ error: "No working hours configured for this veterinarian on this date. Try another date.", ok: "" });
+        }
+      } else if (availableCount === 0) {
+        setMsg({ error: "All remaining time slots for this date are already booked. Try another date.", ok: "" });
+      }
     } catch (err) {
       setMsg({ error: err.message, ok: "" });
     } finally {
@@ -80,18 +90,27 @@ const BookAppointment = () => {
 
   const book = async (e) => {
     e.preventDefault();
+    if (!form.startTime) {
+      return setMsg({ error: "Please choose an available time slot first.", ok: "" });
+    }
+    const chosenSlot = slots.find((s) => s.startTime === form.startTime);
+    if (chosenSlot && chosenSlot.isBooked) {
+      return setMsg({ error: `Already this time slot (${form.startTime}) is booked. Please choose an available time slot.`, ok: "" });
+    }
     try {
       const { data } = await appointmentApi.create({
         pet: form.pet, doctor: form.doctor, date: form.date,
         startTime: form.startTime, reason: form.reason,
       });
+      // Refresh slots so newly booked slot updates to dark highlight immediately
+      findSlots();
       // After booking, show payment modal
       setBookedAppointment(data.appointment);
       setShowPayment(true);
       setPaymentError("");
     } catch (err) {
-      setMsg({ error: err.message, ok: "" });
-      setSlots([]);
+      setMsg({ error: err.message || "Failed to book appointment", ok: "" });
+      findSlots();
     }
   };
 
@@ -173,30 +192,55 @@ const BookAppointment = () => {
         </div>
 
         <button type="button" className="btn btn-ghost" onClick={findSlots} disabled={searching}>
-          {searching ? "Checking…" : "Show free slots"}
+          {searching ? "Checking…" : "Show time slots"}
         </button>
 
         {slots.length > 0 && (
           <div style={{ marginTop: "1.1rem" }}>
-            <label className="small muted">Free slots on {form.date}</label>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: ".5rem", flexWrap: "wrap", gap: ".5rem" }}>
+              <label className="small muted">Time slots on {form.date}</label>
+              <div style={{ display: "flex", gap: "1rem", fontSize: "0.8rem", color: "var(--muted)" }}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+                  <span style={{ width: 12, height: 12, borderRadius: 3, background: "#ffffff", border: "1.5px solid var(--line)", display: "inline-block" }}></span>
+                  Available
+                </span>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+                  <span style={{ width: 12, height: 12, borderRadius: 3, background: "#1f242d", border: "1.5px solid #374151", display: "inline-block" }}></span>
+                  Already Booked
+                </span>
+              </div>
+            </div>
             <div className="slot-grid" style={{ marginTop: ".4rem" }}>
-              {slots.map((s) => (
-                <button
-                  type="button"
-                  key={s.startTime}
-                  className={`slot ${form.startTime === s.startTime ? "selected" : ""}`}
-                  onClick={() => set({ startTime: s.startTime })}
-                >
-                  {s.startTime}
-                </button>
-              ))}
+              {slots.map((s) => {
+                const isBooked = Boolean(s.isBooked);
+                const isSelected = form.startTime === s.startTime;
+                return (
+                  <button
+                    type="button"
+                    key={s.startTime}
+                    className={`slot ${isBooked ? "slot-booked" : ""} ${isSelected ? "selected" : ""}`}
+                    onClick={() => {
+                      if (isBooked) {
+                        setMsg({ error: `Already this time slot (${s.startTime}) is booked. Please choose an available time slot.`, ok: "" });
+                        return;
+                      }
+                      setMsg({ error: "", ok: "" });
+                      set({ startTime: s.startTime });
+                    }}
+                    title={isBooked ? `Already this time slot (${s.startTime}) is booked` : `Select ${s.startTime}`}
+                  >
+                    <span>{s.startTime}</span>
+                    {isBooked && <span className="slot-booked-label">Booked</span>}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
 
         {!searching && form.doctor && form.date && !slots.length && msg.error && (
           <p className="small muted" style={{ marginTop: ".7rem" }}>
-            Choose a date with veterinarian working hours, then click "Show free slots" again.
+            Choose a date with veterinarian working hours, then click "Show time slots" again.
           </p>
         )}
 
