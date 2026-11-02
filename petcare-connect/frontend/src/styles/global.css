@@ -2028,3 +2028,134 @@ tbody tr:hover { background: #faf8f4; }
     font-size: 1.1rem;
   }
 }
+
+/* Password Requirements & Strength Component */
+.password-conditions-box {
+  margin-top: 0.5rem;
+  margin-bottom: 1.25rem;
+  padding: 0.85rem 1rem;
+  background: #fdfdfd;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.conditions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.password-strength-bar {
+  height: 4px;
+  width: 100%;
+  background: #e2e8f0;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 0.65rem;
+}
+
+.password-strength-fill {
+  height: 100%;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.strength-weak {
+  background-color: #ef4444;
+}
+
+.strength-medium {
+  background-color: #f59e0b;
+}
+
+.strength-strong {
+  background-color: #10b981;
+}
+
+.conditions-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.45rem;
+}
+
+@media (min-width: 640px) {
+  .conditions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.condition-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  transition: all 0.25s ease;
+}
+
+.condition-badge.condition-invalid {
+  background: rgba(239, 68, 68, 0.08);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.condition-badge.condition-valid {
+  background: rgba(34, 197, 94, 0.1);
+  color: #15803d;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.condition-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.condition-invalid .condition-icon {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.condition-valid .condition-icon {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.confirm-match-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.confirm-match-badge.matched {
+  color: #16a34a;
+}
+
+.confirm-match-badge.unmatched {
+  color: #dc2626;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

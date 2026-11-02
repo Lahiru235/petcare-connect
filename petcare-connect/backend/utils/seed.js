@@ -3,6 +3,8 @@
  * Creates one account per role, a few pets, vet schedules and appointments.
  */
 require("dotenv").config();
+const dns = require("dns");
+try { dns.setDefaultResultOrder("ipv4first"); } catch (_) {}
 const connectDB = require("../config/db");
 const User = require("../models/User");
 const Pet = require("../models/Pet");
@@ -24,11 +26,11 @@ const dayString = (offset = 0) => {
     Appointment.deleteMany(), MedicalRecord.deleteMany(), Notification.deleteMany(),
   ]);
 
-  const admin = await User.create({ name: "Bihan Perera", email: "admin@petcare.lk", password: "admin123", role: "admin", phone: "0771234567" });
-  const reception = await User.create({ name: "Nadeesha Silva", email: "reception@petcare.lk", password: "reception123", role: "receptionist", phone: "0772234567" });
-  const drFernando = await User.create({ name: "Kasun Fernando", email: "kasun@petcare.lk", password: "doctor123", role: "doctor", specialisation: "Surgery", licenseNo: "VET-1021", consultationFee: 2500 });
-  const drJayasinghe = await User.create({ name: "Ishara Jayasinghe", email: "ishara@petcare.lk", password: "doctor123", role: "doctor", specialisation: "Dermatology", licenseNo: "VET-1044", consultationFee: 2000 });
-  const owner = await User.create({ name: "Amal Dias", email: "owner@petcare.lk", password: "owner123", role: "owner", phone: "0761234567", address: "12 Lake Road, Nuwara Eliya" });
+  const admin = await User.create({ name: "Lahiru Abeysiri", email: "lahiru@gmail.com", password: "Lahiru@123", role: "admin", phone: "0771234567" });
+  const reception = await User.create({ name: "Tharukshi Silva", email: "tharukshi@gmail.com", password: "Tharukshi@123", role: "receptionist", phone: "0772234567" });
+  const drFernando = await User.create({ name: "Yasiru Fernando", email: "yasiru@gmail.com", password: "Yasiru@123", role: "doctor", specialisation: "Surgery", licenseNo: "VET-1021", consultationFee: 2500 });
+  const drJayasinghe = await User.create({ name: "Ishara Jayasinghe", email: "ishara@petcare.lk", password: "Ishara@123", role: "doctor", specialisation: "Dermatology", licenseNo: "VET-1044", consultationFee: 2000 });
+  const owner = await User.create({ name: "Bihan Piyumal", email: "bihan@gmail.com", password: "Bihan@123", role: "owner", phone: "0761234567", address: "12 Lake Road, Nuwara Eliya" });
 
   const bruno = await Pet.create({ owner: owner._id, name: "Bruno", species: "Dog", breed: "Labrador", gender: "Male", age: 3, weight: 27, colour: "Golden" });
   const kiki = await Pet.create({ owner: owner._id, name: "Kiki", species: "Cat", breed: "British Shorthair", gender: "Female", age: 2, weight: 4.5, colour: "Grey" });
@@ -61,10 +63,10 @@ const dayString = (offset = 0) => {
   await Notification.create({ user: owner._id, title: "Welcome to PetCare Connect", message: "Your pets, visits and medical history now live in one place.", type: "system" });
 
   console.log(`Seeded.
-  Admin        admin@petcare.lk / admin123
-  Receptionist reception@petcare.lk / reception123
-  Doctor       kasun@petcare.lk / doctor123
-  Doctor       ishara@petcare.lk / doctor123
-  Pet owner    owner@petcare.lk / owner123`);
+  Admin        lahiru@gmail.com / Lahiru@123
+  Receptionist tharukshi@gmail.com / Tharukshi@123
+  Doctor       yasiru@gmail.com / Yasiru@123
+  Doctor       ishara@petcare.lk / Ishara@123
+  Pet owner    bihan@gmail.com / Bihan@123`);
   process.exit(0);
 })();

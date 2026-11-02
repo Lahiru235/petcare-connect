@@ -8,12 +8,19 @@ const {
 
 const router = express.Router();
 
+const passwordRules = body("password")
+  .isLength({ min: 8 }).withMessage("Password must be at least 8 characters long")
+  .matches(/[A-Z]/).withMessage("Password must contain at least one uppercase letter")
+  .matches(/[a-z]/).withMessage("Password must contain at least one lowercase letter")
+  .matches(/[0-9]/).withMessage("Password must contain at least one number")
+  .matches(/[!@#$%^&*(),.?":{}|<>_+\-=\[\]\\\/]/).withMessage("Password must contain at least one special character (!@#$%^&*)");
+
 router.post(
   "/register",
   [
     body("name").trim().notEmpty().withMessage("Enter your name"),
     body("email").isEmail().withMessage("Enter a valid email"),
-    body("password").isLength({ min: 6 }).withMessage("Password needs at least 6 characters"),
+    passwordRules,
   ],
   validate,
   register
@@ -29,7 +36,7 @@ router.post(
 router.post("/forgot-password", [body("email").isEmail().withMessage("Enter a valid email")], validate, forgotPassword);
 router.post(
   "/reset-password/:token",
-  [body("password").isLength({ min: 6 }).withMessage("Password needs at least 6 characters")],
+  [passwordRules],
   validate,
   resetPassword
 );

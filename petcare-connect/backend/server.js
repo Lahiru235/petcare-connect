@@ -1,4 +1,11 @@
 require("dotenv").config();
+const dns = require("dns");
+
+// Ensure IPv4 is preferred across all DNS operations in the backend
+try {
+  dns.setDefaultResultOrder("ipv4first");
+} catch (_) {}
+
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");

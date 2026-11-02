@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { Alert, Field, useForm } from "../../components/UI";
@@ -17,15 +17,48 @@ const Register = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showRequirements, setShowRequirements] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+
+  // Password requirements evaluation
+  const passwordCriteria = useMemo(() => {
+    const pwd = values.password || "";
+    return [
+      { id: "length", label: "At least 8 characters", valid: pwd.length >= 8 },
+      { id: "upper", label: "At least one uppercase letter (A-Z)", valid: /[A-Z]/.test(pwd) },
+      { id: "lower", label: "At least one lowercase letter (a-z)", valid: /[a-z]/.test(pwd) },
+      { id: "number", label: "At least one number (0-9)", valid: /[0-9]/.test(pwd) },
+      { id: "special", label: "At least one special symbol (!@#$%^&*)", valid: /[!@#$%^&*(),.?":{}|<>_+\-=\[\]\\\/]/.test(pwd) },
+    ];
+  }, [values.password]);
+
+  const metCount = passwordCriteria.filter((c) => c.valid).length;
+  const isPasswordValid = metCount === passwordCriteria.length;
+
+  const strengthStatus = useMemo(() => {
+    if (!values.password) return { label: "Empty", percent: 0, className: "strength-weak" };
+    if (metCount <= 2) return { label: "Weak", percent: 35, className: "strength-weak" };
+    if (metCount <= 4) return { label: "Moderate", percent: 70, className: "strength-medium" };
+    return { label: "Strong", percent: 100, className: "strength-strong" };
+  }, [values.password, metCount]);
+
+  const passwordsMatch = Boolean(values.confirm && values.password === values.confirm);
+  const confirmHasValue = Boolean(values.confirm && values.confirm.length > 0);
 
   const submit = async (e) => {
     e.preventDefault();
     setError("");
+
+    if (!isPasswordValid) {
+      setShowRequirements(true);
+      return setError("Please ensure your password fulfills all required conditions highlighted in red.");
+    }
+
     if (values.password !== values.confirm) {
       return setError("Both passwords must match");
     }
+
     setBusy(true);
     try {
       await register({
@@ -114,9 +147,13 @@ const Register = () => {
                       type={showPassword ? "text" : "password"}
                       value={values.password}
                       onChange={onChange}
+                      onFocus={() => setShowRequirements(true)}
+                      onBlur={() => {
+                        if (!values.password) setShowRequirements(false);
+                      }}
                       required
-                      minLength={6}
-                      placeholder="Min 6 characters"
+                      minLength={8}
+                      placeholder="Min 8 characters"
                       autoComplete="new-password"
                     />
                     <button
@@ -137,8 +174,12 @@ const Register = () => {
                       type={showConfirm ? "text" : "password"}
                       value={values.confirm}
                       onChange={onChange}
+                      onFocus={() => setShowRequirements(true)}
+                      onBlur={() => {
+                        if (!values.password && !values.confirm) setShowRequirements(false);
+                      }}
                       required
-                      minLength={6}
+                      minLength={8}
                       placeholder="Confirm password"
                       autoComplete="new-password"
                     />
@@ -151,8 +192,44 @@ const Register = () => {
                       {showConfirm ? "🙈" : "👁️"}
                     </button>
                   </div>
+                  {confirmHasValue && (
+                    <div className={`confirm-match-badge ${passwordsMatch ? "matched" : "unmatched"}`}>
+                      <span>{passwordsMatch ? "✓ Passwords match" : "✕ Passwords do not match"}</span>
+                    </div>
+                  )}
                 </Field>
               </div>
+
+              {/* Password conditions section: only shown when user clicks/focuses password or has entered text */}
+              {(showRequirements || values.password.length > 0) && (
+                <div className="password-conditions-box">
+                  <div className="conditions-header">
+                    <span>Password Requirements:</span>
+                    <span style={{ fontSize: "0.78rem", fontWeight: 700 }}>
+                      {values.password ? `${strengthStatus.label} (${metCount}/${passwordCriteria.length})` : "Enter password"}
+                    </span>
+                  </div>
+
+                  <div className="password-strength-bar">
+                    <div
+                      className={`password-strength-fill ${strengthStatus.className}`}
+                      style={{ width: `${strengthStatus.percent}%` }}
+                    />
+                  </div>
+
+                  <div className="conditions-grid">
+                    {passwordCriteria.map((criterion) => (
+                      <div
+                        key={criterion.id}
+                        className={`condition-badge ${criterion.valid ? "condition-valid" : "condition-invalid"}`}
+                      >
+                        <span className="condition-icon">{criterion.valid ? "✓" : "✕"}</span>
+                        <span className="condition-text">{criterion.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <button
                 type="submit"

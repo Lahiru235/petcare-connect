@@ -21,7 +21,7 @@ const RegisterWalkIn = () => {
     try {
       const { data } = await authApi.register({
         name: values.name, email: values.email, phone: values.phone,
-        address: values.address, password: values.password || "pet12345",
+        address: values.address, password: values.password || "PetCare@123",
       });
       localStorage.setItem("pcc_token", myToken);
 
@@ -30,7 +30,7 @@ const RegisterWalkIn = () => {
         breed: values.breed, gender: values.gender, age: Number(values.age),
       });
 
-      setMsg({ error: "", ok: `${values.name} and ${values.petName} registered. Temporary password: ${values.password || "pet12345"}` });
+      setMsg({ error: "", ok: `${values.name} and ${values.petName} registered. Temporary password: ${values.password || "PetCare@123"}` });
       reset();
     } catch (err) {
       localStorage.setItem("pcc_token", myToken);
@@ -58,7 +58,7 @@ const RegisterWalkIn = () => {
         </div>
         <div className="grid-2">
           <Field label="Email"><input name="email" type="email" value={values.email} onChange={onChange} required /></Field>
-          <Field label="Temporary password"><input name="password" value={values.password} onChange={onChange} placeholder="pet12345" minLength={6} /></Field>
+          <Field label="Temporary password"><input name="password" value={values.password} onChange={onChange} placeholder="PetCare@123" minLength={8} /></Field>
         </div>
         <Field label="Address"><input name="address" value={values.address} onChange={onChange} /></Field>
 

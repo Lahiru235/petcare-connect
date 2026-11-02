@@ -118,7 +118,7 @@ const UserManagement = () => {
               <Field label="Phone"><input name="phone" value={values.phone} onChange={onChange} /></Field>
             </div>
             <Field label={editing === "new" ? "Password" : "New password (blank keeps the current one)"}>
-              <input name="password" type="password" value={values.password} onChange={onChange} minLength={6} required={editing === "new"} />
+              <input name="password" type="password" value={values.password} onChange={onChange} minLength={8} placeholder="Min 8 chars, uppercase, number & symbol" required={editing === "new"} />
             </Field>
 
             {values.role === "doctor" && (
